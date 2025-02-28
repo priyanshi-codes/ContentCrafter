@@ -1,6 +1,6 @@
 # ContentCrafter
 
-An AI-powered content generation tool that helps users fetch and generate content based on selected genres.
+A content generation tool that helps users fetch and generate content based on selected genres.
 
 ## Features
 - Select a genre to fetch pre-stored content.

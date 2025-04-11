@@ -1,1 +1,1 @@
-export const DB_NAME ="contentcrafter"
+export const DB_NAME = "contentcrafter"

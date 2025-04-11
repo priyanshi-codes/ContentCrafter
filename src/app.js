@@ -1,11 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-
+import contentrouter from './routes/content.routes.js';
 
 
 const app = express();
-
 //app.use in middleware
 app.use(cors({
     origin : process.env.CORS_ORIGIN || "*",
@@ -19,21 +18,9 @@ app.use(express.urlencoded({extended : true , limit : "16kb"}))
 //store images(fevicon , logo) in public 
 app.use(express.static("public"))
 
-
-
 //access cookie from server side and send cookie (perform cred operation on cookie)
 app.use(cookieParser())
 
-
-
-
-//routes
-
-import contentrouter from './routes/content.routes.js';
-
 //routes declarartion
-app.use("/api/v1" , contentrouter);
-
-
-
+app.use("/api/v1", contentrouter);
 export { app  }

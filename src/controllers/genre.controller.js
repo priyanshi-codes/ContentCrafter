@@ -1,6 +1,6 @@
-import Genre from "../models/genre.model.js";
-import ApiError from "../utils/ApiError.js";
-import ApiResponse from "../utils/ApiResponse.js";
+import {Genre} from "../models/genre.model.js";
+import {ApiError} from "../utils/ApiError.js";
+import {ApiResponse} from "../utils/ApiResponse.js";
 
 const getGenres = async (req , res)=>{
     try {

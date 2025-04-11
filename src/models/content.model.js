@@ -3,7 +3,8 @@ import mongoose , {Schema} from "mongoose";
 const contentSchema = new Schema(
     {
         genre:{
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Genre",
             required: true
         },
         title:{
@@ -14,15 +15,10 @@ const contentSchema = new Schema(
             type: String,
             required: true
         },
-        // tags:{
-            // type: [String],
-            // required: true
-        // },
-        
     },
     {
         timestamps: true
     }
 )
 
-export const Content = mongoose.model("Content", contentSchema)
+export const Content = mongoose.model("Content",contentSchema)

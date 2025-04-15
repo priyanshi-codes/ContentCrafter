@@ -26,7 +26,7 @@ const Login = () => {
 
     script.onload = () => {
       window.google.accounts.id.initialize({
-        client_id: "397440990422-tn0vivlu02t476dcdpo6bjcocd9loj92.apps.googleusercontent.com",
+        client_id: "",
         callback: handleCredentialResponse,
         context: "signin",
         ux_mode: "popup",

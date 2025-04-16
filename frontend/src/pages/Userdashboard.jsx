@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Header from '../components/Header/Header'
 import Footer from '@/components/Footer/Footer';
+import GenreDropdown from '../components/GenreDropdown';
+import ContentDisplay from '../components/ContentDropdown';
 
 const UserDashboard = () => {
   const [typingText, setTypingText] = useState('');
@@ -57,66 +59,29 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="text-gray-900 font-sans bg-[linear-gradient(135deg,#f0e8ff,#ffffff)] animate-bgGradient min-h-screen">
-      {/* Navbar */}
+    <div className="text-gray-900 font-Poppins animate-bgGradient min-h-screen">
       <Header />
       {/* Generator Section */}
-      <section className="p-10 bg-gradient-to-r from-[#5c2d91] to-[#360e66] text-white min-h-screen">
-        <div className="w-full max-w-4xl bg-[#3d156e] p-10 rounded-3xl shadow-2xl mx-auto transition-all hover:scale-105">
-          {!showOutput ? (
-            <div>
-              <h3 className="text-3xl font-bold text-center text-blue-300 mb-4">Generate Hybrid Content</h3>
-              <div className="relative h-8 mb-6 text-center overflow-hidden">
-                <p className="text-pink-300 text-lg font-medium tracking-wide transition-all duration-500 ease-in-out">{typingText}</p>
-              </div>
-              {alert && <div className="mb-4 bg-red-500 text-white p-3 rounded text-center font-semibold">{alert}</div>}
-              <label className="block mb-2 text-sm text-gray-300">Select Genre</label>
-              <select
-                value={genre}
-                onChange={(e) => setGenre(e.target.value)}
-                className="w-full p-3 mb-6 rounded-md bg-gray-800 text-white transition-colors hover:bg-gray-700"
-              >
-                <option value="">-- Choose Genre --</option>
-                <option value="technology">Technology</option>
-                <option value="education">Education</option>
-                <option value="marketing">Marketing</option>
-                <option value="health">Health & Wellness</option>
-                <option value="finance">Finance</option>
-              </select>
+      <section className="p-10 bg-gradient-to-b from-gray-900 to-black text-white min-h-screen flex items-center justify-center">
+      <div
+        className="w-full max-w-2xl bg-gradient-to-br from-[#1e293b] via-[#334155] to-[#475569] 
+        p-8 rounded-2xl shadow-xl mx-auto transition-transform duration-500 
+        hover:scale-105 hover:shadow-[0_15px_40px_rgba(0,0,0,0.6)] animate-fadeIn"
+      >
+        <h3 className="text-4xl font-bold text-center text-transparent bg-clip-text 
+        bg-gradient-to-r from-blue-400 via-teal-400 to-green-400 mb-6">
+          Your Content Hub
+        </h3>
 
-              <label className="block mb-2 text-sm text-gray-300">Add your custom prompt (optional)</label>
-              <textarea
-                value={userPrompt}
-                onChange={(e) => setUserPrompt(e.target.value)}
-                rows="4"
-                className="w-full p-3 mb-6 rounded-md bg-gray-800 text-white resize-none transition-all hover:bg-gray-700"
-                placeholder="Write something you want to focus on..."
-              ></textarea>
+        {/* Genre Dropdown */}
+        <GenreDropdown selectedGenre={genre} setSelectedGenre={setGenre}/>
 
-              <button
-                onClick={handleGenerate}
-                className="w-full bg-gradient-to-r from-[#4b2aad] to-[#d16ba5] hover:opacity-90 text-white p-3 rounded-lg font-bold text-lg transition duration-300 transform hover:scale-105"
-              >
-                🚀 Generate Final Content
-              </button>
-            </div>
-          ) : (
-            <div>
-              <h3 className="text-2xl font-bold mb-6 text-center text-green-400">Your Final Content</h3>
-              <div className="bg-gray-800 p-6 rounded-lg shadow-lg text-white">
-                <p>{generatedContent}</p>
-              </div>
-              <button
-                onClick={handleReset}
-                className="mt-6 w-full bg-gradient-to-r from-[#d16ba5] to-[#4b2aad] text-white p-3 rounded-lg font-semibold text-lg transition duration-300 transform hover:scale-105"
-              >
-                🔁 Generate New
-              </button>
-            </div>
-          )}
-        </div>
+        {/* Content Display */}
+        <ContentDisplay genreId={genre} />
+      </div>
       </section>
-      <Footer />
+
+<Footer />
           </div>
   );
 };

@@ -6,7 +6,7 @@ import {ApiResponse} from "../utils/ApiResponse.js";
 const getContent = async (req, res)=>{
     try {
         const {genreId}= req.params;
-        const contents = await Content.findOne({ genre: genreId });
+        const contents = await Content.find({ genre: genreId });
         if(contents.length === 0){
             return res.status(404)
             .json(new ApiError(404 , "No content found for this genre"))

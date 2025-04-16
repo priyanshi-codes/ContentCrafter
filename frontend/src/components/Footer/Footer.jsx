@@ -14,7 +14,7 @@ const Footer = () => {
           <Link to="/contact" className="hover:text-[#a14cc0] font-medium transition">Contact</Link>
         </div>
 
-        <div className="mt-4 md:mt-0 text-sm text-gray-500">&copy; {new Date().getFullYear()} ContentCrafter. All rights reserved.</div>
+        <div className="mt-4 md:mt-0 text-sm text-black">&copy; {new Date().getFullYear()} ContentCrafter. All rights reserved.</div>
       </div>
     </footer>
   );

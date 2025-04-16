@@ -83,29 +83,29 @@ const Login = () => {
   };
 
   return (
-    <div className="bg-[#381963] text-white flex justify-center items-center h-screen flex-col">
-      <h1 className="mb-6 text-4xl font-extrabold text-center text-blue-300">
+    <div className="bg-[#ffff] text-black flex justify-center items-center h-screen flex-col">
+      <h1 className="mb-6 text-4xl font-bold Poppins text-center bg-gradient-to-r from-[#3f83f8] via-[#5db1e9] to-[#4ed6cd] text-transparent bg-clip-text p-4">
         Login to ContentCrafter
       </h1>
 
-      <div className="bg-[#704a94] p-6 rounded-lg w-96 text-center shadow-lg">
+      <div className="bg-[#ffff] p-6 rounded-lg w-96 text-center shadow-lg">
         <h2 className="mb-4 text-2xl font-bold">Login</h2>
 
         <input
           type="email"
           id="loginEmail"
           placeholder="Email"
-          className="w-full p-2 mb-2 text-black bg-white rounded-md"
+          className="w-full p-2 mb-2 text-black bg-white rounded-md border-1"
         />
         <input
           type="password"
           id="loginPassword"
           placeholder="Password"
-          className="w-full p-2 mb-3 text-black bg-white rounded-md"
+          className="w-full p-2 mb-3 text-black bg-white rounded-md border-1"
         />
         <button
           onClick={loginUser}
-          className="w-full p-2 font-semibold bg-blue-600 rounded-md hover:bg-blue-700"
+          className="w-full p-2 font-semibold bg-gradient-to-r from-[#3f83f8] to-[#4ed6cd] rounded-md hover:from-[#4ed6cd] hover:to-[#3f83f8] text-1xl text-white transition duration-200 ease-in-out"
         >
           Login
         </button>

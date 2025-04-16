@@ -55,8 +55,8 @@ const Signup = () => {
   };
 
   return (
-    <div className="bg-[#381963] text-white min-h-screen flex items-center justify-center p-4">
-      <div className="bg-[#704a94] p-6 rounded-xl shadow-xl w-full max-w-md">
+    <div className="bg-[#ffff] text-black min-h-screen flex items-center justify-center p-4">
+      <div className="bg-[#ffff] p-6 rounded-xl shadow-xl w-full max-w-md">
         <h2 className="text-2xl font-bold text-center mb-4">Create Your Account</h2>
 
         <form className="space-y-3" onSubmit={handleSubmit}>
@@ -121,7 +121,8 @@ const Signup = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 p-2 rounded-md font-semibold text-sm transition duration-200"
+            className="w-full p-2 font-semibold bg-gradient-to-r from-[#3f83f8] to-[#4ed6cd] rounded-md hover:from-[#4ed6cd] hover:to-[#3f83f8] text-1xl 
+                text-white transition duration-200 ease-in-out"
           >
             Create Account
           </button>

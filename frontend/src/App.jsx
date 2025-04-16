@@ -4,6 +4,8 @@ import Login from './pages/login';
 import Signup from './pages/signup';
 import DashboardPage from './pages/dashbord';
 import UserDashboard from './pages/Userdashboard';
+import { ThemeProvider } from './components/theme-provider';
+import { ModeToggle } from "@/components/mode-toggle"
 import './App.css';
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
   }
 
   return (
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <div className="min-h-screen bg-white text-black dark:bg-[#0f0f0f] dark:text-white transition-colors">
     <Routes>
       {/* Default route */}
       <Route
@@ -48,6 +52,8 @@ function App() {
         element={isAuthenticated ? <UserDashboard /> : <Navigate to="/login" />}
       />
     </Routes>
+    </div>
+    </ThemeProvider>
   );
 }
 

@@ -4,73 +4,27 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header/Header";
 import Footer from "@/components/Footer/Footer";
-import { ModeToggle } from "@/components/mode-toggle"; // Import the ModeToggle component
+import hero1 from "@/assets/hero1.jpg";
+import hero2 from "@/assets/hero2.jpg";
+import hero3 from "@/assets/hero3.jpg";
+import genre from "@/assets/genre.jpg";
+import chat from "@/assets/chat.jpg";
+import trending from "@/assets/trendytopics.jpg";
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
-  const [genre, setGenre] = useState("");
-  const [userPrompt, setUserPrompt] = useState("");
-  const [finalContent, setFinalContent] = useState("");
-  const [showOutput, setShowOutput] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
 
-  
+  const heroImages = [hero1, hero2, hero3];
 
-  // Manage authentication + scroll animations
   useEffect(() => {
-    let isMounted = true;
-
     const unsub = onAuthStateChanged(auth, (u) => {
-      if (isMounted) setUser(u);
+      setUser(u);
     });
 
-    const handleScroll = () => {
-      document.querySelectorAll(".fade-up").forEach((el) => {
-        const rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight - 100) {
-          el.classList.add("visible");
-        }
-      });
-    };
-
-    window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      isMounted = false;
-      unsub();
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => unsub();
   }, []);
-
-  const handleGenerate = () => {
-    if (!genre) {
-      alert("Please select a genre.");
-      return;
-    }
-
-    setIsLoading(true);
-    setTimeout(() => {
-      let text = `Here’s some high‑quality content in the ${genre.toUpperCase()} domain.`;
-
-      if (userPrompt) {
-        text += `\n\nBased on your input: "${userPrompt}", we've crafted the following:\n\n👉 ${userPrompt} is an essential topic in ${genre}. Here's why it matters…`;
-      } else {
-        text += `\n\n${genre} is a constantly evolving field. Stay updated with trends and strategies to succeed.`;
-      }
-
-      setFinalContent(text);
-      setShowOutput(true);
-      setIsLoading(false);
-    }, 1000);
-  };
-
-  const handleReset = () => {
-    setGenre("");
-    setUserPrompt("");
-    setFinalContent("");
-    setShowOutput(false);
-  };
 
   const handleLogout = async () => {
     try {
@@ -81,59 +35,115 @@ const Dashboard = () => {
     }
   };
 
+  // Auto-scroll functionality
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+    }, 5000); // Change slide every 5 seconds
+    return () => clearInterval(interval);
+  }, [heroImages.length]);
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
+
   return (
-    <div className="text-white font- Poppins">
+    <div className="text-white font-Poppins">
       <Header />
 
-      {/* Hero Section */}
-      <section className="text-center py-30 px-4 bg-[#000000] ">
-        <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-          Content{" "}
-          <span className="text-[#ffff] relative inline-block">
-            made simple
-            <span className="absolute left-0 -bottom-1 h-1 w-full bg-blue-500 rounded-full"></span>
-          </span>
-          <br />
-          for creators & marketers.
-        </h1>
-        <p className="mt-6 text-lg text-white max-w-xl mx-auto">
-          Say goodbye to boring content workflows. We help you create, manage,
-          and publish with ease.
-        </p>
+      {/* Hero Section with Auto-Scrolling and Navigation Dots */}
+      <section className="relative h-[600px] overflow-hidden">
+        {/* Scrolling Background Images */}
+        <div className="absolute top-0 left-0 w-full h-full flex transition-transform duration-1000 ease-in-out" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+          {heroImages.map((image, index) => (
+            <img
+              key={index}
+              src={image}
+              alt={`Hero Image ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+          ))}
+        </div>
+
+        {/* Overlay Text */}
+        <div className="absolute inset-0 bg-transparent bg-opacity-60 flex flex-col items-center justify-center text-center z-10 px-4" id="home">
+          <h1 className="text-5xl font-extrabold mb-4 text-white">
+            Welcome to <span className="text-teal-400">ContentCrafter</span>
+          </h1>
+          <p className="text-lg text-gray-300 mb-8">
+            Empowering creators with AI-driven content solutions.
+          </p>
+          <button className="mt-6 bg-gradient-to-r from-blue-500 via-teal-400 to-green-400 text-white px-8 py-4 rounded-lg font-bold text-lg transition-transform duration-300 hover:scale-105">
+            Get Started
+          </button>
+        </div>
+        {/* Navigation Dots */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+          {heroImages.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`w-3 h-3 rounded-full ${currentSlide === index ? "bg-teal-400" : "bg-gray-400"} transition-colors duration-300`}
+            ></button>
+          ))}
+        </div>
       </section>
 
-            {/* Animated Banner Section */}
-            <div className="overflow-hidden bg-black py-3">
-        <div
-          className="whitespace-nowrap text-4xl font-bold bg-gradient-to-r from-[#3b82f6] to-[#2d94d4] bg-clip-text text-transparent animate-marquee">
-        
-          <span className="inline-block mx-8">
-             ContentCrafter empowers creators & marketers to do more with less — powered by AI, driven by you!
-          </span>
-          
-          <span className="inline-block mx-8">
-             Automate the boring. Amplify the meaningful.
-          </span>
+      {/* Features Section */}
+      <section className="py-20 px-6 bg-gradient-to-b from-gray-900 to-black">
+        <div className="max-w-6xl mx-auto" id="features">
+          <h2 className="text-4xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-teal-400 to-green-400 mb-12">
+            Key Features
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            <div className="p-6 bg-white rounded-xl shadow-md hover:scale-105 transition-transform">
+              <img
+                src={genre}
+                alt="Genre-Based Content"
+                className="rounded-lg mb-4 w-full h-40 object-cover"
+              />
+              <h3 className="text-xl font-semibold text-[#4b2aad] mb-3">
+                Genre-Based Content
+              </h3>
+              <p className="text-black">
+                Select a genre, and let AI refine pre-stored content for you.
+              </p>
+            </div>
+            <div className="p-6 bg-white rounded-xl shadow-md hover:scale-105 transition-transform">
+              <img
+                src={chat}
+                alt="Chat-Based Prompting"
+                className="rounded-lg mb-4 w-full h-40 object-cover"
+              />
+              <h3 className="text-xl font-semibold text-[#4b2aad] mb-3">
+                Chat-Based Prompting
+              </h3>
+              <p className="text-black">
+                Enter a custom prompt, and let AI craft content tailored to your
+                needs.
+              </p>
+            </div>
+            <div className="p-6 bg-white rounded-xl shadow-md hover:scale-105 transition-transform">
+              <img
+                src={trending}
+                alt="Trending Topics"
+                className="rounded-lg mb-4 w-full h-40 object-cover"
+              />
+              <h3 className="text-xl font-semibold text-[#4b2aad] mb-3">
+                Trending Topics
+              </h3>
+              <p className="text-black">
+                Explore trending topics and generate fresh, relevant content.
+              </p>
+            </div>
+          </div>
         </div>
-        <style>
-          {`
-            @keyframes marquee {
-              0% { transform: translateX(100%); }
-              100% { transform: translateX(-100%); }
-            }
-            .animate-marquee {
-              display: inline-block;
-              animation: marquee 12s linear infinite;
-            }
-          `}
-        </style>
-      </div>
-
+      </section>
 
       {/* About Section */}
-      <section className="py-40 px-6 bg-[#0000] ">
+      <section className="py-20 px-6 bg-gray-800" id="about">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-6 text-[#ffff]">
+          <h2 className="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-teal-400 to-blue-400">
             About ContentCrafter
           </h2>
           <p className="text-white text-lg leading-relaxed">
@@ -142,95 +152,22 @@ const Dashboard = () => {
             marketers, and businesses automate the mundane and amplify the
             meaningful. With AI-powered insights, smart templates, and
             collaborative workflows, your content creation becomes faster,
-            smarter, and more impactful. Scale your creativity, optimize your
-            efforts, and stay ahead of the curve — all in one powerful platform.
-            Welcome to the future of content.
+            smarter, and more impactful.
           </p>
         </div>
       </section>
-      
 
-      {/* Features Section */}
-      <section className="py-40 px-6 bg-[#0000] ">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-[#ffff] mb-12">
-            Key Features
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-            <div className="p-6 bg-white rounded-xl shadow-md hover:scale-105 transition-transform">
-              <h3 className="text-xl font-semibold text-[#4b2aad] mb-3">
-                AI-Powered Suggestions
-              </h3>
-              <p className="text-black">
-                Get intelligent content ideas based on your industry and
-                audience trends.
-              </p>
-            </div>
-            <div className="p-6 bg-white rounded-xl shadow-md hover:scale-105 transition-transform">
-              <h3 className="text-xl font-semibold text-[#4b2aad] mb-3">
-                Easy Scheduling
-              </h3>
-              <p className="text-black">
-                Plan, schedule, and auto-publish content across multiple
-                platforms.
-              </p>
-            </div>
-            <div className="p-6 bg-white rounded-xl shadow-md hover:scale-105 transition-transform">
-              <h3 className="text-xl font-semibold-Poppins text-[#4b2aad] mb-3">
-                Analytics & Insights
-              </h3>
-              <p className="text-black">
-                Track performance and optimize your content with smart
-                analytics.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose Us */}
-      <section className="py-40 px-6 bg-[#0000] ">
-        <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-8 text-[#ffff] ">
-            Why Everyone Chooses ContentCrafter
-          </h2>
-          <div className="grid md:grid-cols-2 gap-8 text-left">
-            <div className="p-6 bg-white rounded-lg shadow hover:shadow-lg">
-              <h4 className="font-semibold text-lg mb-2 text-[#4b2aad]">
-                🚀 Super Fast Workflow
-              </h4>
-              <p className="text-black">
-                Create, edit, and publish content in minutes with our intuitive
-                tools.
-              </p>
-            </div>
-            <div className="p-6 bg-white rounded-lg shadow hover:shadow-lg">
-              <h4 className="font-semibold-Poppins text-lg mb-2 text-[#4b2aad]">
-                🤖 AI that Feels Human
-              </h4>
-              <p className="text-black">
-                Our AI writes naturally and adapts to your tone and brand voice.
-              </p>
-            </div>
-            <div className="p-6 bg-white rounded-lg shadow hover:shadow-lg">
-              <h4 className="font-semibold-Poppins text-lg mb-2 text-[#4b2aad]">
-                🎯 Targeted for Results
-              </h4>
-              <p className="text-black">
-                Create content that converts using insights and keyword trends.
-              </p>
-            </div>
-            <div className="p-6 bg-white rounded-lg shadow hover:shadow-lg">
-              <h4 className="font-semibold-Poppins text-lg mb-2 text-[#4b2aad]">
-                🔐 Secure & Reliable
-              </h4>
-              <p className="text-black">
-                We prioritize your data security and platform reliability —
-                always.
-              </p>
-            </div>
-          </div>
-        </div>
+      {/* Call to Action */}
+      <section className="py-20 bg-gradient-to-b from-black to-gray-900 text-center">
+        <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-teal-400 to-blue-400 mb-6">
+          Ready to Create?
+        </h2>
+        <p className="text-gray-300 mb-8">
+          Start your journey with AI-powered content creation today.
+        </p>
+        <button className="bg-gradient-to-r from-blue-500 via-teal-400 to-green-400 text-white px-6 py-3 rounded-lg font-bold text-lg transition-transform duration-300 hover:scale-105">
+          Get Started
+        </button>
       </section>
 
       <Footer />

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/login';
 import Signup from './pages/signup';
-import DashboardPage from './pages/dashbord';
+import DashboardPage from './pages/Dashbord';
 import UserDashboard from './pages/Userdashboard';
 import { ThemeProvider } from './components/theme-provider';
 import { ModeToggle } from "@/components/mode-toggle"

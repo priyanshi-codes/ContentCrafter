@@ -1,14 +1,15 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
+
 const firebaseConfig = {
-     apiKey: "AIzaSyARmhLVS20SGoEFLEwGaQ8uXy8lkGRYR2w",
-     authDomain: "contentcrafter-ad4c1.firebaseapp.com",
-     projectId: "contentcrafter-ad4c1",
-     storageBucket: "contentcrafter-ad4c1.firebasestorage.app",
-     messagingSenderId: "921353864621",
-     appId: "1:921353864621:web:6e4c250f7916d42df28d24",
-     measurementId: "G-LH3V1KGW77"
+     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+     projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+     storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+     messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+     appId: import.meta.env.VITE_FIREBASE_APP_ID,
+     measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);

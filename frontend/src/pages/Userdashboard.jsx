@@ -6,7 +6,9 @@ import genre from "@/assets/genre.jpg";
 import chat from "@/assets/chat.jpg";
 import trending from "@/assets/trendytopics.jpg";
 import { useNavigate } from "react-router-dom";
-//import { motion } from "framer-motion"; // Consider adding framer-motion for animations
+import api from "../services/api"
+import ContentDisplay from '../components/ContentDropdown';
+import FullContentDisplay from '../components/FullContentDisplay';
 
 const UserDashboard = () => {
   const [typingText, setTypingText] = useState("");
@@ -21,6 +23,8 @@ const UserDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [savedProjects, setSavedProjects] = useState([]);
   const [activeTab, setActiveTab] = useState('create'); // 'create' or 'history'
+  const [selectedContentId, setSelectedContentId] = useState(null);
+  const [viewingFullContent, setViewingFullContent] = useState(false);
 
   const typingPhrases = [
     "A best hybrid content awaits...",
@@ -55,7 +59,7 @@ const UserDashboard = () => {
     setAlert("");
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!genre && selectedMode === "Genre-Based Content") {
       setAlert("Please choose a genre first!");
       return;
@@ -69,28 +73,38 @@ const UserDashboard = () => {
     setIsLoading(true);
     setAlert("");
     
-    // Simulate API call with timeout
-    setTimeout(() => {
-      setGeneratedContent(
-        "Your AI-generated content appears here. This is a placeholder for the actual content generation that would integrate with your AI backend service. The content would be tailored to your specific requirements and would match the tone, style, and format you need for your project."
-      );
+    try {
+      if (selectedMode === "Genre-Based Content" && genre) {
+        // Instead of fetching a random content, we'll show the content list
+        // and let the user choose which one they want to view in full
+        setViewingFullContent(false);
+        setSelectedContentId(null);
+        
+        // We'll add the project to saved projects after the user selects the full content
+      } else if (selectedMode === "Chat-Based Prompting" && userPrompt) {
+        // For chat-based prompting - using placeholders for now
+        setGeneratedContent(
+          "This is AI-generated content based on your prompt: " + userPrompt + 
+          "\n\nThis is a placeholder for the actual content generation that would integrate with your AI backend service."
+        );
+        
+        // Add to saved projects
+        const newProject = {
+          id: Date.now(),
+          title: userPrompt.substring(0, 30) + "...",
+          type: selectedMode,
+          date: new Date().toLocaleDateString(),
+          status: "Completed"
+        };
+        
+        setSavedProjects(prev => [newProject, ...prev]);
+      }
+    } catch (error) {
+      console.error("Error generating content:", error);
+      setAlert("Failed to generate content: " + error.message);
+    } finally {
       setIsLoading(false);
-      
-      // Add to saved projects
-      const newProject = {
-        id: Date.now(),
-        title: selectedMode === "Genre-Based Content" 
-          ? `${genre} Content` 
-          : selectedMode === "Chat-Based Prompting"
-            ? userPrompt.substring(0, 30) + "..."
-            : "Trending Topic Content",
-        type: selectedMode,
-        date: new Date().toLocaleDateString(),
-        status: "Completed"
-      };
-      
-      setSavedProjects(prev => [newProject, ...prev]);
-    }, 2000);
+    }
   };
 
   const handleReset = () => {
@@ -134,6 +148,15 @@ const UserDashboard = () => {
     setTimeout(() => {
       setAlert("");
     }, 3000);
+  };
+
+  const handleContentSelect = (contentId) => {
+    setSelectedContentId(contentId);
+    setViewingFullContent(true);
+  };
+
+  const handleBackFromFullContent = () => {
+    setViewingFullContent(false);
   };
 
   return (
@@ -601,6 +624,21 @@ const UserDashboard = () => {
                     </div>
                   ) : null}
                 </div>
+              )}
+              {selectedMode === "Genre-Based Content" && genre && !isLoading && (
+                <>
+                  {viewingFullContent ? (
+                    <FullContentDisplay 
+                      contentId={selectedContentId} 
+                      onBack={handleBackFromFullContent} 
+                    />
+                  ) : (
+                    <ContentDisplay 
+                      genreId={genre} 
+                      onContentSelect={handleContentSelect} 
+                    />
+                  )}
+                </>
               )}
             </div>
           </div>

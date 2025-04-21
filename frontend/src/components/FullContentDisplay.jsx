@@ -99,135 +99,203 @@ const FullContentDisplay = ({ contentId, onBack, onSave }) => {
     }) : null;
 
   // Tag styles
-  const tagStyle = "text-xs font-medium px-2.5 py-0.5 rounded-full";
+  const tagStyle = "text-xs font-medium px-3 py-1 rounded-full";
+  
+  // Function to copy content to clipboard
+  const handleCopyContent = () => {
+    navigator.clipboard.writeText(content.content);
+    setSaved(true); // Reuse the saved state for copy notification
+    setTimeout(() => setSaved(false), 2000);
+  };
 
-  // Success message when content is saved
-  const SavedMessage = () => (
-    <div className={`fixed bottom-8 right-8 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 flex items-center ${saved ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
-      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  // Success message when content is saved or copied
+  const StatusMessage = () => (
+    <div className={`fixed bottom-8 right-8 bg-green-600 text-white px-6 py-4 rounded-lg shadow-xl transform transition-all duration-300 flex items-center ${saved ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
+      <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
       </svg>
-      Content saved successfully!
+      <span className="font-medium">Action completed successfully!</span>
     </div>
   );
 
   return (
     <>
-      {/* Full-screen overlay */}
-      <div className="fixed inset-0 bg-gray-900 z-40 overflow-y-auto">
-        {/* Top navigation bar */}
-        <div className="sticky top-0 bg-gray-800/90 backdrop-blur-sm z-10 border-b border-gray-700">
-          <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+      {/* Immersive full-screen overlay with decorative elements */}
+      <div className="fixed inset-0 bg-gradient-to-b from-gray-900 to-black z-40 overflow-y-auto">
+        {/* Decorative background elements */}
+        <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          <div className="absolute top-0 -left-20 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 -right-20 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/4 right-1/4 w-40 h-40 bg-teal-600/5 rounded-full blur-2xl"></div>
+        </div>
+
+        {/* Enhanced navigation bar with glass effect */}
+        <div className="sticky top-0 bg-gray-900/80 backdrop-blur-lg z-10 border-b border-gray-700/50 shadow-lg">
+          <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
             <button 
               onClick={onBack}
-              className="text-gray-300 hover:text-white flex items-center"
+              className="text-gray-300 hover:text-white flex items-center group transition-all"
             >
-              <FaArrowLeft className="mr-2" />
-              <span>Back to Contents</span>
+              <div className="bg-gray-800/80 p-2 rounded-full mr-3 group-hover:bg-blue-600/20 transition-colors">
+                <FaArrowLeft />
+              </div>
+              <span className="font-medium">Back to Library</span>
             </button>
             
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-4">
+              <button 
+                onClick={handleCopyContent}
+                className="flex items-center px-5 py-2.5 bg-gray-800/80 hover:bg-gray-700 text-white rounded-full transition-colors text-sm font-medium backdrop-blur-sm"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                </svg>
+                <span>Copy</span>
+              </button>
+              
               <button 
                 onClick={handleSaveContent}
-                className="flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors text-sm"
+                className="flex items-center px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full transition-all duration-300 text-sm font-medium shadow-lg hover:shadow-blue-500/30"
               >
-                <FaSave className="mr-1" />
+                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                </svg>
                 <span>Save</span>
-              </button>
-              
-              <button className="flex items-center px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors text-sm">
-                <FaFilePdf className="mr-1" />
-                <span>Export PDF</span>
-              </button>
-              
-              <button className="flex items-center px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors text-sm">
-                <FaShare className="mr-1" />
-                <span>Share</span>
               </button>
             </div>
           </div>
         </div>
         
-        {/* Main content area */}
-        <div className="max-w-4xl mx-auto px-4 py-10">
-          {/* Content header */}
-          <div className="mb-12">
-            <h1 className="text-4xl font-bold text-white mb-4">{content.title}</h1>
-            
-            <div className="flex flex-wrap items-center text-gray-400 mb-6">
-              {formattedDate && (
-                <div className="flex items-center mr-4 mb-2">
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span>{formattedDate}</span>
-                </div>
-              )}
+        {/* Immersive content area with elegant typography */}
+        <div className="max-w-7xl mx-auto px-6 py-16">
+          <div className="bg-gray-800/30 border border-gray-700/50 rounded-3xl p-12 backdrop-blur-sm shadow-2xl">
+            {/* Enhanced header section with visual elements */}
+            <div className="mb-16 relative">
+              {/* Accent line */}
+              <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
               
-              {content.genre && (
-                <div className="flex items-center mr-4 mb-2">
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                  </svg>
-                  <span>{content.genre.name || "Unknown genre"}</span>
+              <div className="ml-6">
+                <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300 leading-tight mb-6">{content.title}</h1>
+                
+                <div className="flex flex-wrap items-center text-gray-400 mb-8">
+                  {formattedDate && (
+                    <div className="flex items-center mr-6 mb-2">
+                      <div className="w-8 h-8 rounded-full bg-gray-700/50 flex items-center justify-center mr-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <span>{formattedDate}</span>
+                    </div>
+                  )}
+                  
+                  {content.genre && (
+                    <div className="flex items-center mr-6 mb-2">
+                      <div className="w-8 h-8 rounded-full bg-gray-700/50 flex items-center justify-center mr-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                      </div>
+                      <span>{content.genre.name || "Unknown genre"}</span>
+                    </div>
+                  )}
+                  
+                  {content.reading_time && (
+                    <div className="flex items-center mb-2">
+                      <div className="w-8 h-8 rounded-full bg-gray-700/50 flex items-center justify-center mr-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <span>{content.reading_time} min read</span>
+                    </div>
+                  )}
                 </div>
-              )}
-              
-              {content.reading_time && (
-                <div className="flex items-center mb-2">
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>{content.reading_time} min read</span>
-                </div>
-              )}
+                
+                {/* Tags with enhanced styling */}
+                {content.tags && content.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {content.tags.map((tag, index) => (
+                      <span key={index} className={`${tagStyle} bg-blue-900/30 text-blue-300 border border-blue-800/50`}>
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             
-            {/* Tags */}
-            {content.tags && content.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-8">
-                {content.tags.map((tag, index) => (
-                  <span key={index} className={`${tagStyle} bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300`}>
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
+            {/* Content body with enhanced typography and styling */}
+            <div className="prose prose-xl prose-invert max-w-none px-6">
+              {/* Format the content paragraphs with different styling based on content */}
+              {content.content.split('\n\n').map((paragraph, index) => {
+                // Heading detection (starts with #)
+                if (paragraph.startsWith('# ')) {
+                  return <h2 key={index} className="text-3xl font-bold text-blue-300 mt-10 mb-6">{paragraph.substring(2)}</h2>;
+                } 
+                // Subheading detection (starts with ##)
+                else if (paragraph.startsWith('## ')) {
+                  return <h3 key={index} className="text-2xl font-bold text-blue-200 mt-8 mb-4">{paragraph.substring(3)}</h3>;
+                }
+                // Quote detection (starts with >)
+                else if (paragraph.startsWith('> ')) {
+                  return (
+                    <blockquote key={index} className="border-l-4 border-blue-500 pl-6 py-3 italic text-gray-300 my-8 bg-blue-900/10 rounded-r-lg">
+                      {paragraph.substring(2)}
+                    </blockquote>
+                  );
+                }
+                // Regular paragraph
+                else if (paragraph.trim()) {
+                  return <p key={index} className="text-gray-300 mb-6 leading-relaxed">{paragraph}</p>;
+                }
+                // Empty space
+                else {
+                  return <div key={index} className="h-4"></div>;
+                }
+              })}
+            </div>
           </div>
           
-          {/* Content body */}
-          <div className="prose prose-lg prose-invert max-w-none">
-            {/* Format the content paragraphs properly */}
-            {content.content.split('\n').map((paragraph, index) => (
-              paragraph ? 
-                <p key={index} className="text-gray-300 mb-6 leading-relaxed">{paragraph}</p> 
-                : <br key={index} />
-            ))}
-          </div>
-          
-          {/* Footer actions */}
-          <div className="mt-16 pt-8 border-t border-gray-700 flex justify-between items-center">
-            <button 
-              onClick={onBack}
-              className="flex items-center text-gray-400 hover:text-white transition-colors"
-            >
-              <FaArrowLeft className="mr-2" />
-              <span>Back to Content List</span>
-            </button>
+          {/* Enhanced footer with additional actions */}
+          <div className="mt-16 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-6 md:mb-0">
+              <button 
+                onClick={onBack}
+                className="flex items-center text-gray-400 hover:text-white transition-colors group"
+              >
+                <div className="p-2 rounded-full bg-gray-800/50 mr-2 group-hover:bg-blue-900/30 transition-colors">
+                  <FaArrowLeft />
+                </div>
+                <span>Return to Collection</span>
+              </button>
+            </div>
             
-            <button 
-              onClick={handleSaveContent}
-              className="flex items-center text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 hover:shadow-blue-500/30"
-            >
-              <FaBookmark className="mr-2" />
-              <span>Save to My Collection</span>
-            </button>
+            <div className="flex space-x-4">
+              <button 
+                onClick={handleCopyContent}
+                className="flex items-center px-5 py-3 bg-gray-800/80 hover:bg-gray-700 text-white rounded-xl transition-colors shadow-md"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <span>Copy Content</span>
+              </button>
+              
+              <button 
+                onClick={handleSaveContent}
+                className="flex items-center px-5 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-blue-500/30"
+              >
+                <FaBookmark className="mr-2" />
+                <span>Save to Library</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
       
-      {/* Success message */}
-      <SavedMessage />
+      {/* Status message */}
+      <StatusMessage />
     </>
   );
 };

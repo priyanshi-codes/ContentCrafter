@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-scroll";
-import { getAuth, signOut } from "firebase/auth";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { app } from "../../services/firebase";
+import { useAuth } from "../../context/AuthContext";
 import { ModeToggle } from "@/components/mode-toggle";
-
-const auth = getAuth(app);
+import Logo from "@/components/Logo";
 
 const Header = () => {
-  const [user] = useAuthState(auth);
+  const { currentUser, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -34,15 +31,14 @@ const Header = () => {
     setIsOpen(false);
   }, [location]);
 
-  const onLogoutClick = () => {
-    signOut(auth)
-      .then(() => {
-        navigate("/");
-        setUserMenuOpen(false);
-      })
-      .catch((error) => {
-        console.error("Error signing out:", error);
-      });
+  const onLogoutClick = async () => {
+    try {
+      await logout();
+      navigate("/dashboard"); // Changed from "/login" to "/dashboard"
+      setUserMenuOpen(false);
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   const toggleMobileMenu = () => {
@@ -54,7 +50,7 @@ const Header = () => {
   };
 
   return (
-    <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+    <header className={`fixed top-0 w-full z-40 transition-all duration-300 ${
       scrolled 
         ? "py-2 backdrop-blur-lg bg-gray-900/90 shadow-lg" 
         : "py-4 bg-gradient-to-r from-gray-900 via-black to-gray-900"
@@ -62,17 +58,8 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo with CSS animation instead of framer-motion */}
-          <div 
-            className="flex-shrink-0 flex items-center animate-fade-in"
-          >
-            <RouterLink to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-xl">CC</span>
-              </div>
-              <div className="text-2xl font-extrabold bg-gradient-to-r from-blue-400 via-teal-400 to-green-400 text-transparent bg-clip-text">
-                ContentCrafter
-              </div>
-            </RouterLink>
+          <div className="flex-shrink-0 flex items-center animate-fade-in">
+            <Logo  />
           </div>
 
           {/* Desktop Navigation */}
@@ -143,7 +130,7 @@ const Header = () => {
           <div className="flex items-center">
             {/* User section or auth buttons */}
             <div className="hidden md:flex items-center space-x-4">
-              {!user ? (
+              {!isAuthenticated ? (
                 /* Auth buttons and dark mode toggle */
                 <div className="flex items-center space-x-3">
                   <RouterLink
@@ -173,13 +160,13 @@ const Header = () => {
                     >
                       <div className="w-7 h-7 rounded-full bg-gradient-to-r from-blue-500 to-teal-400 flex items-center justify-center">
                         <span className="text-white text-xs font-semibold">
-                          {user.displayName 
-                            ? user.displayName.charAt(0).toUpperCase() 
-                            : user.email.charAt(0).toUpperCase()}
+                          {currentUser.displayName 
+                            ? currentUser.displayName.charAt(0).toUpperCase() 
+                            : currentUser.email.charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <span className="text-sm text-gray-300">
-                        {user.displayName || user.email.split('@')[0]}
+                        {currentUser.displayName || currentUser.email.split('@')[0]}
                       </span>
                       <svg 
                         className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`} 
@@ -209,7 +196,7 @@ const Header = () => {
               )}
               
               {/* Dark mode toggle for logged in users */}
-              {user && (
+              {isAuthenticated && (
                 <div className="ml-2">
                   <ModeToggle />
                 </div>
@@ -218,16 +205,16 @@ const Header = () => {
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center">
-              {user && (
+              {isAuthenticated && (
                 <button
                   onClick={toggleUserMenu}
                   className="flex items-center mr-4 bg-gray-800 p-1 rounded-full"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-teal-400 flex items-center justify-center">
                     <span className="text-white text-xs font-semibold">
-                      {user.displayName 
-                        ? user.displayName.charAt(0).toUpperCase() 
-                        : user.email.charAt(0).toUpperCase()}
+                      {currentUser.displayName 
+                        ? currentUser.displayName.charAt(0).toUpperCase() 
+                        : currentUser.email.charAt(0).toUpperCase()}
                     </span>
                   </div>
                 </button>
@@ -350,7 +337,7 @@ const Header = () => {
             )}
             
             {/* Mobile auth buttons */}
-            {!user ? (
+            {!isAuthenticated ? (
               <div className="mt-4 pt-4 border-t border-gray-700">
                 <RouterLink
                   to="/login"
@@ -371,17 +358,17 @@ const Header = () => {
                   <div className="flex-shrink-0">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-teal-400 flex items-center justify-center">
                       <span className="text-white font-semibold">
-                        {user.displayName 
-                          ? user.displayName.charAt(0).toUpperCase() 
-                          : user.email.charAt(0).toUpperCase()}
+                        {currentUser.displayName 
+                          ? currentUser.displayName.charAt(0).toUpperCase() 
+                          : currentUser.email.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   </div>
                   <div className="ml-3">
                     <div className="text-base font-medium text-white">
-                      {user.displayName || user.email.split('@')[0]}
+                      {currentUser.displayName || currentUser.email.split('@')[0]}
                     </div>
-                    <div className="text-sm font-medium text-gray-400 truncate max-w-[200px]">{user.email}</div>
+                    <div className="text-sm font-medium text-gray-400 truncate max-w-[200px]">{currentUser.email}</div>
                   </div>
                 </div>
                 <button
@@ -397,13 +384,13 @@ const Header = () => {
       )}
 
       {/* Simplified mobile user menu - only sign out option */}
-      {userMenuOpen && user && (
+      {userMenuOpen && isAuthenticated && (
         <div
           className="md:hidden absolute right-0 mt-2 w-full px-4 z-50 dropdown-fade-in"
         >
           <div className="rounded-lg shadow-lg bg-gray-800 border border-gray-700 overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-700">
-              <p className="text-sm font-medium text-gray-200 truncate">{user.email}</p>
+              <p className="text-sm font-medium text-gray-200 truncate">{currentUser.email}</p>
             </div>
             <div className="py-1">
               <button

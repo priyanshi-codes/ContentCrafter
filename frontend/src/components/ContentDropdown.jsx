@@ -49,22 +49,31 @@ const ContentDisplay = ({ genreId, onContentSelect }) => {
       {contentPreviews.length === 0 ? (
         <p className="text-center text-gray-400">No content available for this genre.</p>
       ) : (
-        contentPreviews.map((item) => (
-          <div
-            key={item._id}
-            onClick={() => onContentSelect(item._id)}
-            className="bg-gray-800 p-5 rounded-xl mb-4 shadow-md border border-gray-700 cursor-pointer hover:border-blue-400 transition-all duration-300"
-          >
-            <h3 className="text-xl font-semibold text-white mb-2">{item.title}</h3>
-            <p className="text-gray-300">{item.preview}</p>
-            <div className="mt-4 text-blue-400 text-sm flex item-center">
-              <span>Read Full content</span>
-              <svg className="w-4 h-4 ml=1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5 17 7-7 7"/>
-              </svg>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {contentPreviews.map((item) => (
+            <div
+              key={item._id}
+              className="bg-gray-800 p-5 h-full rounded-xl shadow-md border border-gray-700 hover:border-blue-400 hover:shadow-lg transition-all duration-300"
+            >
+              <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
+              <p className="text-gray-300 mb-4 line-clamp-3">{item.preview || (item.content && item.content.substring(0, 150) + "...")}</p>
+              <div className="mt-auto pt-4 border-t border-gray-700 flex justify-between items-center">
+                <span className="text-gray-400 text-sm">
+                  {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
+                </span>
+                <button 
+                  onClick={() => onContentSelect(item._id)}
+                  className="text-blue-400 hover:text-blue-300 text-sm flex items-center group transition-colors cursor-pointer"
+                >
+                  <span>Read Full Content</span>
+                  <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </button>
+              </div>
             </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../services/firebase"; // Ensure this is correctly configured
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { useAuth } from "../context/AuthContext";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { signup } = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -12,6 +12,8 @@ const Signup = () => {
     password: "",
     confirmPassword: "",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -19,27 +21,22 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     const { firstName, lastName, email, password, confirmPassword } = formData;
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match.");
-      return;
+      return setError("Passwords do not match.");
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      const fullName = `${firstName} ${lastName}`;
-      await updateProfile(user, { displayName: fullName });
-
-      localStorage.setItem("username", fullName);
-      localStorage.setItem("userEmail", email);
-
+      setLoading(true);
+      await signup(email, password, firstName, lastName);
       navigate("/user-dashboard");
     } catch (error) {
-      alert("Signup failed: " + error.message);
+      setError("Signup failed: " + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -52,6 +49,13 @@ const Signup = () => {
         <p className="text-sm text-center text-gray-600 mb-6">
           Create an account to unlock the full potential of your content creation journey.
         </p>
+        
+        {error && (
+          <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+            {error}
+          </div>
+        )}
+        
         <form className="space-y-3" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700">First Name</label>
@@ -113,9 +117,10 @@ const Signup = () => {
           </div>
           <button
             type="submit"
+            disabled={loading}
             className="w-full p-2 font-semibold bg-gradient-to-r from-[#3f83f8] to-[#4ed6cd] rounded-md hover:from-[#4ed6cd] hover:to-[#3f83f8] text-white transition duration-200 ease-in-out"
           >
-            Create Account
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
         </form>
         <p className="mt-4 text-sm text-center text-gray-500">

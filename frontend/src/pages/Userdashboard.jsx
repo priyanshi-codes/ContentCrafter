@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import Header from "../components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import GenreDropdown from "../components/GenreDropdown";
-import genre from "@/assets/genre.jpg";
+import genre from "@/assets/Genre.jpg";
 import chat from "@/assets/chat.jpg";
 import trending from "@/assets/trendytopics.jpg";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api"
 import ContentDisplay from '../components/ContentDropdown';
 import FullContentDisplay from '../components/FullContentDisplay';
+import Logo from "@/components/Logo";
 
 const UserDashboard = () => {
   const [typingText, setTypingText] = useState("");
@@ -21,15 +22,11 @@ const UserDashboard = () => {
   const [generatedContent, setGeneratedContent] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [savedProjects, setSavedProjects] = useState([]);
-  const [activeTab, setActiveTab] = useState('create'); // 'create' or 'history'
   const [selectedContentId, setSelectedContentId] = useState(null);
   const [viewingFullContent, setViewingFullContent] = useState(false);
 
   const typingPhrases = [
-    "A best hybrid content awaits...",
-    "AI-powered creativity, at your fingertips.",
-    "Craft. Refine. Publish. Effortlessly.",
+    "A best hybrid content awaits...AI-powered creativity, at your fingertips, Craft. Refine. Publish. Effortlessly"
   ];
 
   useEffect(() => {
@@ -42,16 +39,6 @@ const UserDashboard = () => {
     }
     return () => clearTimeout(timeout);
   }, [charIndex]);
-
-  const eraseText = () => {
-    if (charIndex > 0) {
-      setTypingText((prev) => prev.slice(0, -1));
-      setCharIndex(charIndex - 1);
-    } else {
-      setPhraseIndex((prev) => (prev + 1) % typingPhrases.length);
-      setTimeout(() => setCharIndex(0), 600);
-    }
-  };
 
   const handleModeSelection = (mode) => {
     setSelectedMode(mode);
@@ -153,20 +140,23 @@ const UserDashboard = () => {
   const handleContentSelect = (contentId) => {
     setSelectedContentId(contentId);
     setViewingFullContent(true);
+    // Close the modal when viewing full content
+    setIsModalOpen(false);
   };
 
   const handleBackFromFullContent = () => {
     setViewingFullContent(false);
+    // Reopen the modal when returning from full content view
+    setIsModalOpen(true);
   };
 
   return (
     <div className="bg-gray-900 text-gray-200 font-Poppins min-h-screen">
       <Header />
       {/* Main Content Wrapper */}
-      <div className={`${isModalOpen ? "blur-sm" : ""} transition-all duration-300`}>
+      <div className={`${isModalOpen && !viewingFullContent ? "blur-sm" : ""} transition-all duration-300`}>
         {/* Hero Section - Enhanced with better overlay and animations */}
         <section className="relative min-h-[75vh] flex items-center justify-center text-white">
-          {/* Video Background with improved loading */}
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
             <video
               className="absolute top-0 left-0 w-full h-full object-cover"
@@ -363,110 +353,83 @@ const UserDashboard = () => {
           </div>
         </section>
 
-        {/* Analytics Dashboard Preview - Enhanced with better visuals */}
-        <section className="py-20 bg-gradient-to-b from-gray-900 to-gray-800">
-          <div className="container mx-auto px-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-              <div className="order-2 md:order-1">
-                <span className="inline-block px-3 py-1 bg-blue-900/60 text-blue-300 rounded-full text-sm font-medium mb-4">Analytics Dashboard</span>
-                <h2 className="text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-teal-400">Track Your Content Performance</h2>
-                <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-teal-400 mb-6"></div>
-                <p className="text-gray-300 mb-8 text-lg leading-relaxed">
-                  Monitor how your content performs with our comprehensive analytics. Get real-time insights on engagement metrics, audience demographics, and conversion rates to continuously improve your content strategy.
-                </p>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center text-gray-300">
-                    <svg className="h-5 w-5 text-teal-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Real-time performance tracking
-                  </li>
-                  <li className="flex items-center text-gray-300">
-                    <svg className="h-5 w-5 text-teal-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Content engagement analytics
-                  </li>
-                  <li className="flex items-center text-gray-300">
-                    <svg className="h-5 w-5 text-teal-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Audience demographic insights
-                  </li>
-                </ul>
-                <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-teal-500 rounded-lg hover:from-teal-500 hover:to-blue-600 transition duration-300 shadow-lg text-white font-semibold flex items-center space-x-2">
-                  <span>View Analytics</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              </div>
-              <div className="order-1 md:order-2 relative">
-                <div className="absolute -top-10 -left-10 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl"></div>
-                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-teal-500/10 rounded-full blur-2xl"></div>
-                <div className="bg-gray-800 p-3 rounded-2xl shadow-2xl border border-gray-700 relative z-10 transform hover:scale-105 transition-transform duration-500">
-                  <div className="bg-gray-900 rounded-xl overflow-hidden">
-                    <img 
-                      src="https://cdn.dribbble.com/users/2004199/screenshots/15145756/media/d5bd7de3f932e62d26c4f8b22d993a61.png" 
-                      alt="Analytics Dashboard" 
-                      className="w-full object-cover rounded-lg"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Recent Projects - Enhanced with better table design */}
+        {/* AI Content Workflow Section  */}
         <section className="py-20 bg-gray-900">
           <div className="container mx-auto px-6">
             <div className="flex flex-col items-center mb-16">
-              <h2 className="text-4xl font-bold text-center mb-4">Your Recent Projects</h2>
+              <h2 className="text-4xl font-bold text-center mb-4">Streamline Your Content Workflow</h2>
               <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-teal-400"></div>
-              <p className="mt-6 text-gray-300 max-w-2xl text-center">Track and manage all your content creation projects in one place.</p>
+              <p className="mt-6 text-gray-300 max-w-2xl text-center">A powerful end-to-end solution for creating, refining, and publishing content with AI assistance.</p>
             </div>
             
-            <div className="bg-gray-800 rounded-2xl shadow-xl border border-gray-700 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead>
-                    <tr className="bg-gray-900/80 border-b border-gray-700">
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-blue-300 uppercase tracking-wider">Project</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-blue-300 uppercase tracking-wider">Type</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-blue-300 uppercase tracking-wider">Created</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-blue-300 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-blue-300 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-700">
-                    {savedProjects.map((project) => (
-                      <tr key={project.id} className="hover:bg-gray-750 transition">
-                        <td className="px-6 py-5 text-gray-200 font-medium">{project.title}</td>
-                        <td className="px-6 py-5 text-gray-300">{project.type}</td>
-                        <td className="px-6 py-5 text-gray-300">{project.date}</td>
-                        <td className="px-6 py-5">
-                          <span className="px-3 py-1.5 bg-green-900/30 text-green-400 rounded-full text-xs font-medium">
-                            {project.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-5 space-x-3">
-                          <button className="px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 rounded-md text-sm transition-colors">View</button>
-                          <button className="px-3 py-1.5 bg-gray-700/30 hover:bg-gray-700/60 text-gray-300 rounded-md text-sm transition-colors">Edit</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="bg-gray-850 py-4 px-6 border-t border-gray-700">
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-gray-400">Showing {savedProjects.length} of {savedProjects.length} projects</p>
-                  <button className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium flex items-center space-x-2">
-                    <span>View All Projects</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+            <div className="relative">
+              {/* Connecting line */}
+              <div className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-teal-500 transform -translate-y-1/2 hidden md:block"></div>
+              
+              {/* Workflow steps */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
+                {/* Step 1 */}
+                <div className="bg-gray-800/70 rounded-xl p-6 border border-gray-700 hover:border-blue-500 transition-all duration-300 hover:-translate-y-2 relative">
+                  <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">1</div>
+                  <div className="h-16 w-16 mx-auto mb-6 text-blue-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-center mb-3 text-blue-300">Ideate</h3>
+                  <p className="text-gray-300 text-center">Generate creative concepts and content ideas tailored to your specific needs and audience.</p>
+                </div>
+                
+                {/* Step 2 */}
+                <div className="bg-gray-800/70 rounded-xl p-6 border border-gray-700 hover:border-teal-500 transition-all duration-300 hover:-translate-y-2 relative">
+                  <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-10 h-10 rounded-full bg-teal-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">2</div>
+                  <div className="h-16 w-16 mx-auto mb-6 text-teal-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-center mb-3 text-teal-300">Create</h3>
+                  <p className="text-gray-300 text-center">Draft your content using AI assistance with customizable templates and genre-specific guidance.</p>
+                </div>
+                
+                {/* Step 3 */}
+                <div className="bg-gray-800/70 rounded-xl p-6 border border-gray-700 hover:border-purple-500 transition-all duration-300 hover:-translate-y-2 relative">
+                  <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">3</div>
+                  <div className="h-16 w-16 mx-auto mb-6 text-purple-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-center mb-3 text-purple-300">Refine</h3>
+                  <p className="text-gray-300 text-center">Polish your content with AI-powered suggestions for clarity, engagement, and search optimization.</p>
+                </div>
+                
+                {/* Step 4 */}
+                <div className="bg-gray-800/70 rounded-xl p-6 border border-gray-700 hover:border-green-500 transition-all duration-300 hover:-translate-y-2 relative">
+                  <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">4</div>
+                  <div className="h-16 w-16 mx-auto mb-6 text-green-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-center mb-3 text-green-300">Publish</h3>
+                  <p className="text-gray-300 text-center">Export and distribute your content across multiple platforms with format-specific optimizations.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-16 bg-gradient-to-r from-blue-900/20 to-teal-900/20 border border-gray-700 rounded-xl p-8 max-w-4xl mx-auto">
+              <div className="flex flex-col md:flex-row items-center">
+                <div className="mb-6 md:mb-0 md:mr-8 md:w-2/3">
+                  <h3 className="text-2xl font-bold mb-3 text-blue-300">Ready to transform your content creation?</h3>
+                  <p className="text-gray-300">Start creating professional, engaging content in minutes with our AI-powered platform. No more writer's block or hours spent staring at a blank page.</p>
+                </div>
+                <div className="md:w-1/3">
+                  <button 
+                    onClick={() => document.getElementById("contentModes").scrollIntoView({ behavior: "smooth" })}
+                    className="w-full py-4 bg-gradient-to-r from-blue-600 to-teal-500 rounded-lg hover:from-teal-500 hover:to-blue-600 text-white transition duration-300 shadow-lg font-semibold text-lg"
+                  >
+                    Get Started Now
                   </button>
                 </div>
               </div>
@@ -475,8 +438,8 @@ const UserDashboard = () => {
         </section>
       </div>
 
-      {/* Enhanced Modal Design */}
-      {isModalOpen && (
+      {/* Enhanced Modal Design - Only show when not viewing full content */}
+      {isModalOpen && !viewingFullContent && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div
             className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg transform transition-all duration-300 scale-100 relative border border-gray-700 overflow-hidden"
@@ -484,21 +447,22 @@ const UserDashboard = () => {
             {/* Modal Header */}
             <div className="relative">
               <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-r from-blue-600/20 to-teal-600/20 z-0"></div>
-              <div className="px-8 pt-8 pb-4 relative z-10">
-                <div className="absolute top-4 right-4">
-                  <button 
-                    onClick={handleReset}
-                    className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-                <h3 className="text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-teal-400 to-blue-400">
+              <div className="px-8 pt-6 pb-2 relative z-10 flex flex-col items-center">
+                <Logo variant="small" withLink={false} />
+                <h3 className="text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-teal-400 to-blue-400 mt-2">
                   {selectedMode}
                 </h3>
                 <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-teal-400 mx-auto mt-3"></div>
+              </div>
+              <div className="absolute top-4 right-4">
+                <button 
+                  onClick={handleReset}
+                  className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
               </div>
             </div>
 
@@ -626,23 +590,22 @@ const UserDashboard = () => {
                 </div>
               )}
               {selectedMode === "Genre-Based Content" && genre && !isLoading && (
-                <>
-                  {viewingFullContent ? (
-                    <FullContentDisplay 
-                      contentId={selectedContentId} 
-                      onBack={handleBackFromFullContent} 
-                    />
-                  ) : (
-                    <ContentDisplay 
-                      genreId={genre} 
-                      onContentSelect={handleContentSelect} 
-                    />
-                  )}
-                </>
+                <ContentDisplay 
+                  genreId={genre} 
+                  onContentSelect={handleContentSelect} 
+                />
               )}
             </div>
           </div>
         </div>
+      )}
+
+      {/* Full Content View - Show as overlay when viewing full content */}
+      {viewingFullContent && (
+        <FullContentDisplay 
+          contentId={selectedContentId} 
+          onBack={handleBackFromFullContent} 
+        />
       )}
 
       <Footer />

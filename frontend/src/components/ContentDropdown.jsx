@@ -21,12 +21,12 @@ const ContentDisplay = ({ genreId, onContentSelect }) => {
           setContentPreviews(res.data.data);
         } else {
           console.error("Invalid data format:", res.data);
-          setContents([]);
+          setContentPreviews([]); // Fix: Changed from setContents to setContentPreviews
           setError("Invalid response format");
         }
       } catch (err) {
         console.error("Error fetching content:", err);
-        setContents([]);
+        setContentPreviews([]); // Fix: Changed from setContents to setContentPreviews
         setError(err.message || "Failed to fetch content");
       } finally {
         setLoading(false);

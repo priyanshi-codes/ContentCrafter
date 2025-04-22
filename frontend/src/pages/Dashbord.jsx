@@ -7,7 +7,7 @@ import Footer from "@/components/Footer/Footer";
 import hero1 from "@/assets/hero1.jpg";
 import hero2 from "@/assets/hero2.jpg";
 import hero3 from "@/assets/hero3.jpg";
-import genre from "@/assets/genre.jpg";
+import genre1 from "@/assets/genre1.jpg"
 import chat from "@/assets/chat.jpg";
 import trending from "@/assets/trendytopics.jpg";
 
@@ -35,7 +35,7 @@ const Dashboard = () => {
         "Optimized for engagement in your specific field"
       ],
       usage: "Simply select your content genre, specify key parameters, and our AI will generate content that feels authentic and resonates with your target audience.",
-      image: genre
+      image: genre1
     },
     chat: {
       title: "Chat-Based Content Prompting",
@@ -241,7 +241,7 @@ const Dashboard = () => {
             <div className="group cursor-pointer bg-gray-750 rounded-xl shadow-xl hover:shadow-2xl transition duration-300 overflow-hidden border border-gray-700 hover:border-blue-500">
               <div className="relative h-56 overflow-hidden">
                 <img
-                  src={genre}
+                  src={genre1}
                   alt="Genre-Based Content"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
@@ -553,14 +553,12 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Enhanced CTA Section */}
       <section className="py-20 px-6 bg-gradient-to-b from-gray-900 to-black">
         <div className="max-w-5xl mx-auto bg-gradient-to-r from-blue-900/20 to-teal-900/20 p-12 rounded-2xl border border-gray-800 relative overflow-hidden">
           {/* Enhanced background elements */}
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl"></div>
-            {/* Additional decorative elements */}
             <div className="absolute top-1/2 left-1/4 w-20 h-20 bg-purple-500/5 rounded-full blur-xl"></div>
             <div className="absolute bottom-1/3 right-1/3 w-16 h-16 bg-green-500/5 rounded-full blur-xl"></div>
           </div>
@@ -580,12 +578,6 @@ const Dashboard = () => {
                 <span>Get Started Free</span>
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-              <button className="px-8 py-4 font-semibold border border-gray-600 rounded-lg hover:bg-gray-800 text-white transition duration-300 ease-in-out flex items-center gap-2 w-full sm:w-auto">
-                <span>Watch Demo</span>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-teal-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
                 </svg>
               </button>
             </div>
@@ -659,17 +651,6 @@ const Dashboard = () => {
       )}
 
       <Footer />
-
-      {/* Add the needed animation styles */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out forwards;
-        }
-      `}</style>
     </div>
   );
 };

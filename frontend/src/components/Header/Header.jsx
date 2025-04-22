@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-scroll";
 import { useAuth } from "../../context/AuthContext";
-import { ModeToggle } from "@/components/mode-toggle";
 import Logo from "@/components/Logo";
 
 const Header = () => {
@@ -34,7 +33,7 @@ const Header = () => {
   const onLogoutClick = async () => {
     try {
       await logout();
-      navigate("/dashboard"); // Changed from "/login" to "/dashboard"
+      window.location.href = "/dashboard";
       setUserMenuOpen(false);
     } catch (error) {
       console.error("Error signing out:", error);
@@ -57,7 +56,7 @@ const Header = () => {
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo with CSS animation instead of framer-motion */}
+    
           <div className="flex-shrink-0 flex items-center animate-fade-in">
             <Logo  />
           </div>
@@ -145,10 +144,6 @@ const Header = () => {
                   >
                     Sign up
                   </RouterLink>
-                  {/* Dark mode toggle after signup button */}
-                  <div className="ml-2">
-                    <ModeToggle />
-                  </div>
                 </div>
               ) : (
                 /* Simplified user profile dropdown - just username and signout */
@@ -195,12 +190,6 @@ const Header = () => {
                 </div>
               )}
               
-              {/* Dark mode toggle for logged in users */}
-              {isAuthenticated && (
-                <div className="ml-2">
-                  <ModeToggle />
-                </div>
-              )}
             </div>
 
             {/* Mobile menu button */}
@@ -219,11 +208,6 @@ const Header = () => {
                   </div>
                 </button>
               )}
-              
-              {/* Dark mode toggle for mobile */}
-              <div className="mr-3">
-                <ModeToggle />
-              </div>
               
               <button
                 onClick={toggleMobileMenu}

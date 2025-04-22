@@ -20,8 +20,11 @@ const Login = () => {
     script.defer = true;
 
     script.onload = () => {
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+      console.log("Initializing Google Sign-In with client ID:", clientId);
+      
       window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "",
+        client_id: clientId,
         callback: handleCredentialResponse,
         context: "signin",
         ux_mode: "popup",
@@ -33,6 +36,8 @@ const Login = () => {
         {
           theme: "outline",
           size: "large",
+          text: "signin_with",
+          shape: "rectangular",
         }
       );
     };
@@ -40,20 +45,42 @@ const Login = () => {
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
     };
   }, [navigate]);
 
   const handleCredentialResponse = async (response) => {
     try {
+      console.log("Google Sign-In response received");
+      
+      // Create the credential from the response
       const credential = GoogleAuthProvider.credential(response.credential);
+      
+      // Sign in with Firebase using the Google credential
       const result = await signInWithCredential(auth, credential);
       const user = result.user;
+      
+      console.log("Google Sign-In successful:", user.email);
+      
+      // Store user info and redirect
       localStorage.setItem("userEmail", user.email);
       localStorage.setItem("username", user.displayName || "Google User");
-      navigate("/user-dashboard"); // Ensure consistent navigation
+      localStorage.setItem("userPhoto", user.photoURL || "");
+      navigate("/user-dashboard"); 
     } catch (error) {
-      setError("Google login failed: " + error.message);
+      console.error("Google Sign-In error:", error);
+      
+      // Show a more user-friendly error message
+      let errorMessage = "Google login failed: " + error.message;
+      
+      // Check for the specific error we're trying to solve
+      if (error.code === "auth/invalid-credential") {
+        errorMessage = "Authentication error: The Google Client ID is not authorized for this Firebase project. Please contact support.";
+      }
+      
+      setError(errorMessage);
     }
   };
 
@@ -68,7 +95,7 @@ const Login = () => {
     try {
       setLoading(true);
       await login(email, password);
-      navigate("/user-dashboard"); // Ensure consistent navigation
+      navigate("/user-dashboard");
     } catch (error) {
       setError("Login failed: " + error.message);
     } finally {

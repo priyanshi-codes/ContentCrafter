@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Header from "../components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import GenreDropdown from "../components/GenreDropdown";
-import genre from "@/assets/Genre.jpg";
+import genre1 from "@/assets/genre1.jpg"
 import chat from "@/assets/chat.jpg";
 import trending from "@/assets/trendytopics.jpg";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,7 @@ import api from "../services/api"
 import ContentDisplay from '../components/ContentDropdown';
 import FullContentDisplay from '../components/FullContentDisplay';
 import Logo from "@/components/Logo";
+import display from "@/assets/dispaly.avif"
 
 const UserDashboard = () => {
   const [typingText, setTypingText] = useState("");
@@ -24,6 +25,7 @@ const UserDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedContentId, setSelectedContentId] = useState(null);
   const [viewingFullContent, setViewingFullContent] = useState(false);
+  const [showGenrePage, setShowGenrePage] = useState(false);
 
   const typingPhrases = [
     "A best hybrid content awaits...AI-powered creativity, at your fingertips, Craft. Refine. Publish. Effortlessly"
@@ -42,7 +44,14 @@ const UserDashboard = () => {
 
   const handleModeSelection = (mode) => {
     setSelectedMode(mode);
-    setIsModalOpen(true);
+    
+    // If Genre-Based Content is selected, show it in full page
+    if (mode === "Genre-Based Content") {
+      setShowGenrePage(true);
+    } else {
+      setIsModalOpen(true);
+    }
+    
     setAlert("");
   };
 
@@ -116,6 +125,9 @@ const UserDashboard = () => {
       setAlert("");
       setIsModalOpen(false);
     }
+    
+    // Also reset the showGenrePage state
+    setShowGenrePage(false);
   };
 
   const handleCopyContent = () => {
@@ -150,33 +162,32 @@ const UserDashboard = () => {
     setIsModalOpen(true);
   };
 
+  const handleBackFromGenrePage = () => {
+    // Reset all necessary states to return to the main dashboard
+    setShowGenrePage(false);
+    setSelectedMode("");
+    setGenre("");
+    setUserPrompt("");
+    setAlert("");
+    setIsModalOpen(false);
+    setGeneratedContent("");
+  };
+
   return (
     <div className="bg-gray-900 text-gray-200 font-Poppins min-h-screen">
       <Header />
       {/* Main Content Wrapper */}
-      <div className={`${isModalOpen && !viewingFullContent ? "blur-sm" : ""} transition-all duration-300`}>
-        {/* Hero Section - Enhanced with better overlay and animations */}
-        <section className="relative min-h-[75vh] flex items-center justify-center text-white">
+      <div className={`${(isModalOpen && !viewingFullContent) || showGenrePage ? "blur-sm" : ""} transition-all duration-300`}>
+        <section className="relative h-screen flex items-center justify-center text-white pt-16">
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-            <video
-              className="absolute top-0 left-0 w-full h-full object-cover"
-              autoPlay
-              loop
-              muted
-              playsInline
-              poster="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80"
-            >
-              <source src="https://assets.mixkit.co/videos/preview/mixkit-typing-on-smartphone-in-city-1080-large.mp4" type="video/mp4" />
-            </video>
+              <img src={display}  className="absolute top-0 left-0 w-full h-full object-cover" />
+            
             {/* Enhanced gradient overlay for better visibility */}
             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-gray-900/90 via-gray-900/60 to-gray-900/90"></div>
           </div>
           
           {/* Enhanced Hero Content */}
-          <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
-            <div className="inline-block mb-4 px-4 py-1 bg-blue-500/20 rounded-full backdrop-blur-sm">
-              <span className="text-blue-300 font-medium">AI-Powered Content Generation</span>
-            </div>
+          <div className="relative z-10 text-center px-6 max-w-5xl mx-auto mt-12"> 
             <h1 className="text-6xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-teal-400 to-green-400 mb-6">
               Welcome to Content Crafter
             </h1>
@@ -199,7 +210,7 @@ const UserDashboard = () => {
           </div>
         </section>
 
-        {/* Content Creation Modes - Enhanced with better cards and hover effects */}
+        {/* Content Creation Modes-*/}
         <section id="contentModes" className="py-20 bg-gray-800/90 text-gray-200 backdrop-blur-sm">
           <div className="container mx-auto px-6">
             <div className="flex flex-col items-center mb-16">
@@ -209,14 +220,13 @@ const UserDashboard = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Enhanced Mode Cards */}
               <div
                 onClick={() => handleModeSelection("Genre-Based Content")}
                 className="group cursor-pointer bg-gray-750 rounded-xl shadow-xl hover:shadow-2xl transition duration-300 overflow-hidden border border-gray-700 hover:border-blue-500"
               >
                 <div className="relative h-48 overflow-hidden">
                   <img
-                    src={genre}
+                    src={genre1}
                     alt="Genre-Based Content"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
@@ -299,7 +309,7 @@ const UserDashboard = () => {
           </div>
         </section>
 
-        {/* Features Section - Enhanced with better layout and visual elements */}
+        {/* Features Section */}
         <section className="py-20 bg-gray-900">
           <div className="container mx-auto px-6">
             <div className="flex flex-col items-center mb-16">
@@ -353,7 +363,7 @@ const UserDashboard = () => {
           </div>
         </section>
 
-        {/* AI Content Workflow Section  */}
+        {/*AI Content Workflow Section */}
         <section className="py-20 bg-gray-900">
           <div className="container mx-auto px-6">
             <div className="flex flex-col items-center mb-16">
@@ -363,8 +373,7 @@ const UserDashboard = () => {
             </div>
             
             <div className="relative">
-              {/* Connecting line */}
-              <div className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-teal-500 transform -translate-y-1/2 hidden md:block"></div>
+              {/* Removing the connecting line */}
               
               {/* Workflow steps */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
@@ -438,8 +447,75 @@ const UserDashboard = () => {
         </section>
       </div>
 
+      {/* Genre-Based Content Full Page View */}
+      {showGenrePage && (
+        <div className="fixed inset-0 bg-gradient-to-b from-gray-900 to-black z-40 overflow-y-auto">
+          <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+            <div className="absolute top-0 -left-20 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 -right-20 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl"></div>
+            <div className="absolute top-1/4 right-1/4 w-40 h-40 bg-teal-600/5 rounded-full blur-2xl"></div>
+          </div>
+
+          {/* Enhanced navigation bar with glass effect */}
+          <div className="sticky top-0 bg-gray-900/80 backdrop-blur-lg z-10 border-b border-gray-700/50 shadow-lg">
+            <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+              <button 
+                onClick={handleBackFromGenrePage}
+                className="text-gray-300 hover:text-white flex items-center group transition-all"
+              >
+                <div className="bg-gray-800/80 p-2 rounded-full mr-3 group-hover:bg-blue-600/20 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="font-medium">Back to Dashboard</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Content area */}
+          <div className="max-w-7xl mx-auto px-6 py-16">
+            <div className="bg-gray-800/30 border border-gray-700/50 rounded-3xl p-12 backdrop-blur-sm shadow-2xl">
+              <div className="mb-10">
+                <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300 leading-tight mb-6">
+                  Genre-Based Content Library
+                </h1>
+                <p className="text-gray-300 text-xl">
+                  Browse and select content from your preferred genre
+                </p>
+              </div>
+
+              {/* Genre selection dropdown */}
+              <div className="mb-10 max-w-md">
+                <GenreDropdown selectedGenre={genre} setSelectedGenre={setGenre} />
+              </div>
+
+              {/* Content listing */}
+              {genre ? (
+                <ContentDisplay 
+                  genreId={genre} 
+                  onContentSelect={handleContentSelect} 
+                />
+              ) : (
+                <div className="text-center py-10">
+                  <div className="w-20 h-20 mx-auto mb-6 text-blue-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-3">Select a Genre</h3>
+                  <p className="text-gray-400 max-w-md mx-auto">
+                    Choose a genre from the dropdown above to browse available content
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Enhanced Modal Design - Only show when not viewing full content */}
-      {isModalOpen && !viewingFullContent && (
+      {isModalOpen && !viewingFullContent && !showGenrePage && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div
             className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg transform transition-all duration-300 scale-100 relative border border-gray-700 overflow-hidden"

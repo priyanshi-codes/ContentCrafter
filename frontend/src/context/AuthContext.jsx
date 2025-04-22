@@ -44,9 +44,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Logout function
-  const logout = () => {
+  const logout = async () => {
     localStorage.removeItem("username");
     localStorage.removeItem("userEmail");
+    localStorage.removeItem("userPhoto"); // Also clear photo if it exists
+    
+    // The signOut function will automatically trigger the onAuthStateChanged listener
+    // which will update currentUser to null
     return signOut(auth);
   };
 

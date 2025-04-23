@@ -143,7 +143,7 @@ const Dashboard = () => {
     <div className="bg-gray-900 text-gray-200 font-Poppins">
       <Header />
 
-      {/* Enhanced Hero Section with Dynamic Content and Better Visuals */}
+      {/*  Hero Section */}
       <section className="relative h-screen overflow-hidden">
         {/* Improved Background with Gradient Overlay */}
         <div className="absolute top-0 left-0 w-full h-full">
@@ -169,9 +169,6 @@ const Dashboard = () => {
         {/* Enhanced Hero Content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-10 px-4">
           <div className="max-w-5xl mx-auto">
-            <div className="inline-block mb-6 px-4 py-1 bg-blue-500/20 rounded-full backdrop-blur-sm">
-              <span className="text-blue-300 font-medium">AI-Powered Content Creation</span>
-            </div>
             <h1 className="text-5xl md:text-7xl font-extrabold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-teal-400 to-green-400">
               Craft Content That Connects
             </h1>

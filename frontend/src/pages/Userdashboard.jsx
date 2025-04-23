@@ -28,7 +28,7 @@ const UserDashboard = () => {
   const [showGenrePage, setShowGenrePage] = useState(false);
 
   const typingPhrases = [
-    "A best hybrid content awaits...AI-powered creativity, at your fingertips, Craft. Refine. Publish. Effortlessly"
+    "Craft, Refine, Publish, Effortlessly"
   ];
 
   useEffect(() => {

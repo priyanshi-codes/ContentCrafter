@@ -16,7 +16,20 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+    const { id, value } = e.target;
+    
+    // Validate names to only allow alphabetic characters and spaces
+    if ((id === "firstName" || id === "lastName") && value) {
+      // Allow only letters and spaces
+      if (!/^[A-Za-z\s]+$/.test(value)) {
+        setError(`${id === "firstName" ? "First name" : "Last name"} can only contain alphabetic characters.`);
+        return;
+      } else {
+        setError("");
+      }
+    }
+    
+    setFormData({ ...formData, [id]: value });
   };
 
   const handleSubmit = async (e) => {
@@ -24,6 +37,11 @@ const Signup = () => {
     setError("");
 
     const { firstName, lastName, email, password, confirmPassword } = formData;
+
+    // Additional validation before submission
+    if (!/^[A-Za-z\s]+$/.test(firstName) || !/^[A-Za-z\s]+$/.test(lastName)) {
+      return setError("Names can only contain alphabetic characters.");
+    }
 
     if (password !== confirmPassword) {
       return setError("Passwords do not match.");
@@ -71,6 +89,8 @@ const Signup = () => {
                 onChange={handleChange}
                 className="w-full p-3 rounded-md bg-gray-50 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 required
+                pattern="[A-Za-z\s]+"
+                title="Only alphabetic characters are allowed"
               />
             </div>
             <div>
@@ -82,6 +102,8 @@ const Signup = () => {
                 onChange={handleChange}
                 className="w-full p-3 rounded-md bg-gray-50 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 required
+                pattern="[A-Za-z\s]+"
+                title="Only alphabetic characters are allowed"
               />
             </div>
           </div>
@@ -108,9 +130,6 @@ const Signup = () => {
               className="w-full p-3 rounded-md bg-gray-50 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
               required
             />
-            <small className="text-xs text-gray-500 mt-1 block">
-              Min 8 characters, 1 number, 1 uppercase letter
-            </small>
           </div>
           
           <div>

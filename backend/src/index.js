@@ -1,22 +1,49 @@
+// Load environment variables FIRST, before any other imports
 import dotenv from 'dotenv';
-import connectDB from './db/index_db.js';
-import { app } from './app.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const envPath = path.resolve(__dirname, '../.env');
 
 dotenv.config({
-    path : './env'
-})
+  path: envPath,
+});
 
+// Now import other modules that may depend on env vars
+import { createServer } from 'http';
+import connectDB from './db/index_db.js';
+import { app } from './app.js';
+import { initStreamChat } from '../streamchat/index.js';
 
+// Create HTTP server (required for potential WebSocket/streaming features)
+const server = createServer(app);
+
+// Initialize StreamChat module
+const chatService = initStreamChat({
+  app,
+  server,
+  options: {},
+});
+
+// Connect to MongoDB and start server
 connectDB()
-.then(()=>{
-    app.listen(process.env.PORT|| 3000, ()=>{
-        console.log(`Server is running on port : ${
-            process.env.PORT
-        }`)
-    })
+  .then(() => {
+    server.listen(process.env.PORT || 3000, () => {
+      console.log(`✅ Server is running on port: ${process.env.PORT || 3000}`);
+    });
+  })
+  .catch((err) => {
+    console.error('❌ MongoDB Connection Failed!', err);
+    process.exit(1);
+  });
 
-})
-.catch((err)=>{
-    console.log("MONGODB Connection Failed!!", err);
-})
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully...');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
 

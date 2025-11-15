@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
 import Header from "../components/Header/Header";
-import Footer from "@/components/Footer/Footer";
-import GenreDropdown from "../components/GenreDropdown";
-import genre1 from "@/assets/genre1.jpg"
-import chat from "@/assets/chat.jpg";
-import trending from "@/assets/trendytopics.jpg";
+import Footer from "../components/Footer/Footer";
+import GenreDropdown from "../GenreBased/GenreDropdown";
+import genre1 from "../../assets/genre1.jpg"
+import chat from "../../assets/chat.jpg";
+import trending from "../../assets/trendytopics.jpg";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api"
-import ContentDisplay from '../components/ContentDropdown';
-import FullContentDisplay from '../components/FullContentDisplay';
-import Logo from "@/components/Logo";
-import display from "@/assets/dispaly.avif"
+import ContentDisplay from '../GenreBased/ContentDropdown';
+import FullContentDisplay from '../GenreBased/FullContentDisplay';
+import Logo from "../../components/ui/Logo";
+import display from "../../assets/dispaly.avif"
+import StreamChatInterface from "../ChatBased/components/StreamChatInterface";
 
 const UserDashboard = () => {
   const [typingText, setTypingText] = useState("");
@@ -26,6 +27,7 @@ const UserDashboard = () => {
   const [selectedContentId, setSelectedContentId] = useState(null);
   const [viewingFullContent, setViewingFullContent] = useState(false);
   const [showGenrePage, setShowGenrePage] = useState(false);
+  const [showChatInterface, setShowChatInterface] = useState(false);
 
   const typingPhrases = [
     "Craft, Refine, Publish, Effortlessly"
@@ -42,13 +44,29 @@ const UserDashboard = () => {
     return () => clearTimeout(timeout);
   }, [charIndex]);
 
+  const eraseText = () => {
+    if (typingText.length > 0) {
+      setTypingText((prev) => prev.slice(0, -1));
+      setTimeout(() => eraseText(), 30);
+    } else {
+      setPhraseIndex((prev) => (prev + 1) % typingPhrases.length);
+      setCharIndex(0);
+    }
+  };
+
   const handleModeSelection = (mode) => {
     setSelectedMode(mode);
     
     // If Genre-Based Content is selected, show it in full page
     if (mode === "Genre-Based Content") {
       setShowGenrePage(true);
-    } else {
+    } 
+    // If Chat-Based Prompting is selected, show new Stream Chat interface
+    else if (mode === "Chat-Based Prompting") {
+      setShowChatInterface(true);
+    }
+    // For other modes (Trending Topics), use modal
+    else {
       setIsModalOpen(true);
     }
     
@@ -515,7 +533,7 @@ const UserDashboard = () => {
       )}
 
       {/* Enhanced Modal Design - Only show when not viewing full content */}
-      {isModalOpen && !viewingFullContent && !showGenrePage && (
+      {isModalOpen && !viewingFullContent && !showGenrePage && !showChatInterface && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div
             className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg transform transition-all duration-300 scale-100 relative border border-gray-700 overflow-hidden"
@@ -681,6 +699,16 @@ const UserDashboard = () => {
         <FullContentDisplay 
           contentId={selectedContentId} 
           onBack={handleBackFromFullContent} 
+        />
+      )}
+
+      {/* Stream Chat Interface Modal */}
+      {showChatInterface && (
+        <StreamChatInterface 
+          onClose={() => {
+            setShowChatInterface(false);
+            handleReset();
+          }}
         />
       )}
 

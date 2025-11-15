@@ -1,16 +1,34 @@
 import {Content} from "../models/content.model.js";
+import {Genre} from "../models/genre.model.js";
 import {ApiError} from "../utils/ApiError.js";
 import {ApiResponse} from "../utils/ApiResponse.js";
-
-
 
 //Get content list by genre(with preview)
 const getContent = async (req, res)=>{
     try {
         const {genreId}= req.params;
+        console.log('Fetching content for genreId:', genreId);
+        
         //Find all content for this genre
         const contents = await Content.find({ genre: genreId });
+        console.log('Found contents:', contents.length);
+        
         if(contents.length === 0){
+            // Debug: Check if genre exists
+            const genre = await Genre.findById(genreId);
+            console.log('✅ Genre found:', genre?.name || 'NOT FOUND');
+            
+            // Check all content in database
+            const allContent = await Content.find().populate('genre');
+            console.log('📊 Total content in DB:', allContent.length);
+            if(allContent.length > 0) {
+                console.log('📋 Sample content:', allContent.slice(0, 2).map(c => ({ 
+                    genre_id: c.genre?._id, 
+                    genre_name: c.genre?.name, 
+                    title: c.title 
+                })));
+            }
+            
             return res.status(404)
             .json(new ApiError(404 , "No content found for this genre"))
         }
@@ -30,7 +48,7 @@ const getContent = async (req, res)=>{
         .json(new ApiResponse(200, contentPreviews))
         
     } catch (error) {
-        console.log(error);
+        console.error('Error fetching content:', error);
         return res.status(500).
         json(new ApiError(500 , "No content found for this genre"))    
     }

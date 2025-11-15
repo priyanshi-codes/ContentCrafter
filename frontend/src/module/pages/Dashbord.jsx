@@ -3,13 +3,13 @@ import { auth } from "../services/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header/Header";
-import Footer from "@/components/Footer/Footer";
-import hero1 from "@/assets/hero1.jpg";
-import hero2 from "@/assets/hero2.jpg";
-import hero3 from "@/assets/hero3.jpg";
-import genre1 from "@/assets/genre1.jpg"
-import chat from "@/assets/chat.jpg";
-import trending from "@/assets/trendytopics.jpg";
+import Footer from "../components/Footer/Footer";
+import hero1 from "../../assets/hero1.jpg";
+import hero2 from "../../assets/hero2.jpg";
+import hero3 from "../../assets/hero3.jpg";
+import genre1 from "../../assets/genre1.jpg"
+import chat from "../../assets/chat.jpg";
+import trending from "../../assets/trendytopics.jpg";
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -170,7 +170,7 @@ const Dashboard = () => {
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-10 px-4">
           <div className="max-w-5xl mx-auto">
             <h1 className="text-5xl md:text-7xl font-extrabold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-teal-400 to-green-400">
-              Craft Content That Connects
+              
             </h1>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-teal-400 mx-auto mb-8"></div>
             <p className="text-xl text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed">

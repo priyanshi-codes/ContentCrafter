@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-scroll";
 import { useAuth } from "../../context/AuthContext";
-import Logo from "@/components/Logo";
+import Logo from "../../../components/ui/Logo";
 
 const Header = () => {
   const { currentUser, logout, isAuthenticated } = useAuth();

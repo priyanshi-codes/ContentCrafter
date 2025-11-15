@@ -7,7 +7,7 @@ const GenreDropdown = ({ selectedGenre, setSelectedGenre }) => {
   useEffect(() => {
     const fetchGenres = async () => {
       try {
-        const res = await api.get("/genres");
+        const res = await api.get("/content/genres");
         console.log("Fetched Genres: ", res.data);
         setGenres(res.data.data);
       } catch (err) {

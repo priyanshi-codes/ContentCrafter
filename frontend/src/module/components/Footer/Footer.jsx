@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Link as ScrollLink } from "react-scroll";
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaGithub } from "react-icons/fa";
 import { MdEmail, MdLocationOn, MdPhone } from "react-icons/md";
-import Logo from "@/components/Logo";
+import Logo from "../../../components/ui/Logo";
 
 const Footer = () => {
   return (

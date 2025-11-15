@@ -8,6 +8,10 @@
     "noEmit": true,
     "moduleResolution": "node",
     "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
 
     // Add this alias for shadcn
     "baseUrl": ".", 

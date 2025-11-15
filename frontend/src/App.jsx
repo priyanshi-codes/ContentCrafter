@@ -1,11 +1,12 @@
 import { Routes, Route } from 'react-router-dom';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import DashboardPage from './pages/Dashbord';
-import UserDashboard from './pages/Userdashboard';
-import { ThemeProvider } from './components/theme-provider';
-import { AuthProvider } from './context/AuthContext';
-import { ProtectedRoute, PublicRoute, ConditionalHomeRoute } from './components/ProtectedRoute';
+import Login from './module/pages/Login';
+import Signup from './module/pages/Signup';
+import DashboardPage from './module/pages/Dashbord';
+import UserDashboard from './module/pages/Userdashboard';
+import { ThemeProvider } from './module/components/theme-provider';
+import { AuthProvider } from './module/context/AuthContext';
+import { ProtectedRoute, PublicRoute, ConditionalHomeRoute } from './module/components/ProtectedRoute';
+import { Toaster } from './components/ui/sonner';
 import './App.css';
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
               } 
             />
           </Routes>
+          <Toaster />
         </div>
       </AuthProvider>
     </ThemeProvider>

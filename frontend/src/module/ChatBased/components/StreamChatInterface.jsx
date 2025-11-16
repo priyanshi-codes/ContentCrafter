@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import api from "../../services/api";
+import { StreamChat } from "stream-chat";
 
 /**
  * Integrated Stream Chat Component
@@ -12,43 +13,139 @@ const StreamChatInterface = ({ onClose, onBack }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [chatStatus, setChatStatus] = useState("initializing");
+  const [chatClient, setChatClient] = useState(null);
+  const [channel, setChannel] = useState(null);
 
   // Initialize chat connection on mount
   useEffect(() => {
+    let newChannel = null;
+    let client = null;
+    let cleanupDone = false;
+
     const initializeChat = async () => {
       try {
         setChatStatus("connecting");
         
-        // Check if backend chat service is ready
+        // Step 1: Get chat status
         const statusResponse = await api.get("/chat/status");
-        console.log("Chat status:", statusResponse.data);
+        console.log("Chat status response:", statusResponse.data);
         
-        if (statusResponse.data.success) {
-          setChatStatus("ready");
-          // Add initial system message
-          setMessages([
-            {
-              id: "system-1",
-              type: "system",
-              text: "✅ AI Writing Assistant Ready! Start typing your writing prompt or ask for help.",
-              timestamp: new Date(),
-            },
-          ]);
-        } else {
+        if (statusResponse.data?.message !== 'Chat service is initialized') {
           setChatStatus("error");
           setError("Chat service not available");
+          return;
         }
+
+        const userId = `user-${Date.now()}`;
+
+        // Step 2: Get token from backend
+        const tokenResponse = await api.post("/chat/token", {
+          userId: userId
+        });
+        const token = tokenResponse.data.token;
+        console.log("Token received for user:", userId);
+
+        // Step 3: Initialize Stream Chat client
+        client = new StreamChat(import.meta.env.VITE_STREAM_API_KEY);
+        await client.connectUser(
+          {
+            id: userId,
+            name: "User",
+          },
+          token
+        );
+        setChatClient(client);
+        console.log("Stream Chat client connected");
+
+        // Step 4: Create channel
+        const channelId = `writing-assistance-${Date.now()}`;
+        newChannel = client.channel("messaging", channelId, {
+          name: "AI Writing Assistant Chat",
+        });
+        await newChannel.create();
+        await newChannel.watch();
+        console.log("Channel created and watched:", channelId);
+        setChannel(newChannel);
+
+        // Step 5: Start AI agent on backend (only once per channel)
+        const agentResponse = await api.post("/chat/start-agent", {
+          channel_id: channelId,
+          channel_type: "messaging",
+        });
+        console.log("Agent started:", agentResponse.data);
+
+        // Step 6: Load existing messages
+        const state = await newChannel.query({ messages: { limit: 50 } });
+        const existingMessages = state.messages
+          .filter(msg => msg.user?.id?.startsWith("ai-bot-"))
+          .map(msg => ({
+            id: msg.id,
+            type: "ai",
+            text: msg.text,
+            timestamp: new Date(msg.created_at),
+          }));
+        console.log("Loaded existing messages:", existingMessages.length);
+
+        // Step 7: Listen for NEW and UPDATED messages
+        const handleNewMessage = (event) => {
+          const msg = event.message;
+          console.log("[Frontend] Message event - User ID:", msg?.user?.id, "Text:", msg?.text?.substring(0, 50));
+          
+          // Show messages from AI bot (not user messages)
+          if (msg && msg.user?.id?.startsWith("ai-bot-")) {
+            console.log("[Frontend] Adding/Updating AI message to state");
+            setMessages((prev) => {
+              // Check if message already exists
+              const existingIndex = prev.findIndex(m => m.id === msg.id);
+              
+              if (existingIndex !== -1) {
+                // Update existing message (for streaming updates)
+                const updated = [...prev];
+                updated[existingIndex] = {
+                  id: msg.id,
+                  type: "ai",
+                  text: msg.text,
+                  timestamp: new Date(msg.created_at),
+                };
+                return updated;
+              } else {
+                // Add new message
+                return [...prev, {
+                  id: msg.id,
+                  type: "ai",
+                  text: msg.text,
+                  timestamp: new Date(msg.created_at),
+                }];
+              }
+            });
+          }
+        };
+
+        // Listen for both new AND updated messages
+        newChannel.on("message.new", handleNewMessage);
+        newChannel.on("message.updated", handleNewMessage);
+        console.log("Message listener attached for new and updated messages");
+
+        setChatStatus("ready");
+        setMessages([
+          {
+            id: "system-1",
+            type: "system",
+            text: "✅ AI Writing Assistant Ready! Start typing your writing prompt or ask for help.",
+            timestamp: new Date(),
+          },
+          ...existingMessages,
+        ]);
+
       } catch (err) {
         console.error("Failed to initialize chat:", err);
         setChatStatus("error");
         setError("Failed to connect to chat service: " + err.message);
-        
-        // Show fallback message
         setMessages([
           {
             id: "system-error",
             type: "error",
-            text: "⚠️ Chat service is currently offline. Please try again later or use the regular prompting mode.",
+            text: "⚠️ Chat service is currently offline.",
             timestamp: new Date(),
           },
         ]);
@@ -56,11 +153,28 @@ const StreamChatInterface = ({ onClose, onBack }) => {
     };
 
     initializeChat();
+
+    // Return cleanup function
+    return () => {
+      console.log("Cleaning up chat connection");
+      if (!cleanupDone) {
+        cleanupDone = true;
+        if (newChannel) {
+          console.log("Removing message listeners");
+          newChannel.off("message.new");
+          newChannel.off("message.updated");
+        }
+        if (client) {
+          console.log("Disconnecting user");
+          client.disconnectUser().catch(err => console.error("Error disconnecting:", err));
+        }
+      }
+    };
   }, []);
 
   // Handle sending a message
   const handleSendMessage = async () => {
-    if (!inputText.trim() || isLoading) return;
+    if (!inputText.trim() || isLoading || !channel) return;
 
     const userMessage = {
       id: `user-${Date.now()}`,
@@ -74,27 +188,17 @@ const StreamChatInterface = ({ onClose, onBack }) => {
     setIsLoading(true);
 
     try {
-      // Send message to AI backend
-      const response = await api.post("/ai/generate/chat", {
-        prompt: inputText,
-        type: "writing_assistant",
+      // Send message via Stream Chat
+      await channel.sendMessage({
+        text: inputText,
       });
-
-      const aiMessage = {
-        id: `ai-${Date.now()}`,
-        type: "ai",
-        text: response.data.data?.content || response.data.data || "No response from AI",
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, aiMessage]);
     } catch (err) {
       console.error("Error sending message:", err);
       
       const errorMessage = {
         id: `error-${Date.now()}`,
         type: "error",
-        text: `❌ Error: ${err.response?.data?.message || err.message}`,
+        text: `❌ Error: ${err.message}`,
         timestamp: new Date(),
       };
 

@@ -2,7 +2,6 @@
 export const AgentPlatform = {
   GEMINI: 'gemini',
   WRITING_ASSISTANT: 'writing_assistant',
-  OPENAI: 'openai',
 };
 
 // AIAgent interface (JSDoc definition - runtime validation)
@@ -10,11 +9,12 @@ export const AgentPlatform = {
  * @typedef {Object} AIAgent
  * @property {Object} [user] - Optional user object
  * @property {Object} channel - Stream Chat channel
- * @property {Object} chatClient - Stream Chat client
+ * @property {Object} StreamChat - Stream Chat client
  * @property {Function} getLastInteraction - Returns last interaction timestamp
  * @property {Function} init - Initialize the agent
  * @property {Function} dispose - Cleanup agent resources
  */
+export const AIAgent = {};
 
 // WritingMessage interface (JSDoc definition)
 /**
@@ -24,6 +24,7 @@ export const AgentPlatform = {
  * @property {string} [custom.writingTask] - Current writing task
  * @property {string} [custom.messageType] - Type of message
  */
+export const WritingMessage = {};
 
 export default {
   AgentPlatform,

@@ -6,8 +6,9 @@ import { StreamChat } from "stream-chat";
 /**
  * Integrated Stream Chat Component
  * Connects to backend StreamChat service for real-time AI writing assistance
+ * Uses authenticated Firebase user ID for persistent sessions
  */
-const StreamChatInterface = ({ onClose, onBack }) => {
+const StreamChatInterface = ({ userId, userName, onClose, onBack }) => {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -36,26 +37,28 @@ const StreamChatInterface = ({ onClose, onBack }) => {
           return;
         }
 
-        const userId = `user-${Date.now()}`;
+        const userId_actual = userId; // Use authenticated Firebase user ID
+        console.log("[Frontend] Using authenticated user ID:", userId_actual);
 
         // Step 2: Get token from backend
         const tokenResponse = await api.post("/chat/token", {
-          userId: userId
+          userId: userId_actual,
+          userName: userName || "User"
         });
         const token = tokenResponse.data.token;
-        console.log("Token received for user:", userId);
+        console.log("Token received for user:", userId_actual);
 
         // Step 3: Initialize Stream Chat client
         client = new StreamChat(import.meta.env.VITE_STREAM_API_KEY);
         await client.connectUser(
           {
-            id: userId,
-            name: "User",
+            id: userId_actual,
+            name: userName || "User",
           },
           token
         );
         setChatClient(client);
-        console.log("Stream Chat client connected");
+        console.log("Stream Chat client connected for user:", userId_actual);
 
         // Step 4: Create channel
         const channelId = `writing-assistance-${Date.now()}`;

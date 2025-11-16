@@ -11,7 +11,7 @@ import ContentDisplay from '../GenreBased/ContentDropdown';
 import FullContentDisplay from '../GenreBased/FullContentDisplay';
 import Logo from "../../components/ui/Logo";
 import display from "../../assets/dispaly.avif"
-import StreamChatInterface from "../ChatBased/components/StreamChatInterface";
+import ChatBasedModule from "../ChatBased/ChatBasedModule";
 
 const UserDashboard = () => {
   const [typingText, setTypingText] = useState("");
@@ -704,8 +704,12 @@ const UserDashboard = () => {
 
       {/* Stream Chat Interface Modal */}
       {showChatInterface && (
-        <StreamChatInterface 
+        <ChatBasedModule
           onClose={() => {
+            setShowChatInterface(false);
+            handleReset();
+          }}
+          onBack={() => {
             setShowChatInterface(false);
             handleReset();
           }}

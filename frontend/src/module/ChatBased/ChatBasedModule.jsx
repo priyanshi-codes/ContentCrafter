@@ -22,6 +22,7 @@ const ChatBasedModule = ({ onClose, onBack }) => {
   const [chatClient, setChatClient] = useState(null);
   const [channel, setChannel] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [updatingMessageId, setUpdatingMessageId] = useState(null);
   const messagesEndRef = useRef(null);
 
   // Auto-scroll to bottom
@@ -119,9 +120,20 @@ const ChatBasedModule = ({ onClose, onBack }) => {
         console.log("[ChatBasedModule] Loaded existing messages:", existingMessages.length);
 
         // Step 7: Listen for messages
+        let updateTimeout;
         const handleNewMessage = (event) => {
           const msg = event.message;
           console.log("[ChatBasedModule] Message event:", msg?.user?.id, msg?.text?.substring(0, 50));
+
+          const isAiMessage = msg.user?.id?.startsWith("ai-bot-");
+          if (isAiMessage) {
+            setUpdatingMessageId(msg.id);
+            // Clear the updating state after 500ms of no updates
+            clearTimeout(updateTimeout);
+            updateTimeout = setTimeout(() => {
+              setUpdatingMessageId(null);
+            }, 500);
+          }
 
           setMessages((prev) => {
             const existingIndex = prev.findIndex((m) => m.id === msg.id);
@@ -130,7 +142,7 @@ const ChatBasedModule = ({ onClose, onBack }) => {
               const updated = [...prev];
               updated[existingIndex] = {
                 id: msg.id,
-                type: msg.user?.id?.startsWith("ai-bot-") ? "ai" : "user",
+                type: isAiMessage ? "ai" : "user",
                 text: msg.text,
                 timestamp: new Date(msg.created_at),
                 userName: msg.user?.name || "User",
@@ -139,7 +151,7 @@ const ChatBasedModule = ({ onClose, onBack }) => {
             } else {
               return [...prev, {
                 id: msg.id,
-                type: msg.user?.id?.startsWith("ai-bot-") ? "ai" : "user",
+                type: isAiMessage ? "ai" : "user",
                 text: msg.text,
                 timestamp: new Date(msg.created_at),
                 userName: msg.user?.name || "User",
@@ -223,16 +235,8 @@ const ChatBasedModule = ({ onClose, onBack }) => {
 
   // Handle sending message
   const handleSendMessage = async () => {
+    if (!inputText.trim()) return;
 
-    const userMessage = {
-      id: `user-${Date.now()}`,
-      type: "user",
-      text: inputText,
-      timestamp: new Date(),
-      userName: user?.displayName || user?.email || "You",
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
     setInputText("");
     setIsLoadingMessage(true);
 
@@ -380,8 +384,8 @@ const ChatBasedModule = ({ onClose, onBack }) => {
                   </div>
                 </div>
 
-                {/* Optimization buttons for AI messages */}
-                {msg.type === "ai" && msg.text && !msg.text.includes("Error") && (
+                {/* Optimization buttons for AI messages - only when not loading and not currently updating */}
+                {msg.type === "ai" && msg.text && !msg.text.includes("Error") && !isLoadingMessage && updatingMessageId !== msg.id && (
                   <div className="mt-3 ml-4 flex flex-wrap gap-2">
                     {optimizationPrompts.map((opt, optIdx) => (
                       <button

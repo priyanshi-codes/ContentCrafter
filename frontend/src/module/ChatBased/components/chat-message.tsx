@@ -11,6 +11,23 @@ import {
   useMessageTextStreaming,
 } from "stream-chat-react";
 
+/**
+ * Clean and prepare message text for markdown rendering
+ * Removes extra formatting artifacts and normalizes the text
+ */
+const cleanMessageText = (text: string): string => {
+  if (!text) return "";
+  
+  // Replace HTML entities if present
+  let cleaned = text
+    .replace(/&nbsp;/g, " ")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#39;/g, "'");
+  
+  return cleaned;
+};
+
 const ChatMessage: React.FC = () => {
   const { message } = useMessageContext();
   const { channel } = useChannelStateContext();
@@ -53,6 +70,9 @@ const ChatMessage: React.FC = () => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
+  // Clean the message text
+  const displayText = cleanMessageText(streamedMessageText || message.text || "");
+
   return (
     <div
       className={cn(
@@ -91,25 +111,40 @@ const ChatMessage: React.FC = () => {
             {/* Message Text */}
             <div className="break-words">
               <ReactMarkdown
+                skipHtml={false}
+                allowedElements={[
+                  "p",
+                  "br",
+                  "strong",
+                  "em",
+                  "u",
+                  "h1",
+                  "h2",
+                  "h3",
+                  "ul",
+                  "ol",
+                  "li",
+                  "blockquote",
+                  "code",
+                  "pre",
+                  "a",
+                ]}
                 components={{
                   p: ({ children }) => (
                     <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>
                   ),
-                  code: ({ children, ...props }) => {
-                    const { node, ...rest } = props;
-                    const isInline = !rest.className?.includes("language-");
+                  code: ({ children, inline, ...props }) => {
+                    const isCodeBlock =
+                      typeof children === "string" && children.includes("\n");
 
-                    return isInline ? (
-                      <code
-                        className="px-1.5 py-0.5 rounded text-xs font-mono bg-black/10 dark:bg-white/10"
-                        {...rest}
-                      >
+                    return isCodeBlock ? (
+                      <pre className="p-3 rounded-md overflow-x-auto my-2 text-xs font-mono bg-black/5 dark:bg-white/5">
+                        <code className="text-xs">{children}</code>
+                      </pre>
+                    ) : (
+                      <code className="px-1.5 py-0.5 rounded text-xs font-mono bg-black/10 dark:bg-white/10">
                         {children}
                       </code>
-                    ) : (
-                      <pre className="p-3 rounded-md overflow-x-auto my-2 text-xs font-mono bg-black/5 dark:bg-white/5">
-                        <code {...rest}>{children}</code>
-                      </pre>
                     );
                   },
                   ul: ({ children }) => (
@@ -149,14 +184,24 @@ const ChatMessage: React.FC = () => {
                     <strong className="font-semibold">{children}</strong>
                   ),
                   em: ({ children }) => <em className="italic">{children}</em>,
+                  a: ({ children, href }) => (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      {children}
+                    </a>
+                  ),
                 }}
               >
-                {streamedMessageText || message.text || ""}
+                {displayText}
               </ReactMarkdown>
             </div>
 
             {/* Loading State */}
-            {aiState && !streamedMessageText && !message.text && (
+            {aiState && !displayText && (
               <div className="flex items-center gap-2 mt-2 pt-2">
                 <span className="text-xs opacity-70">
                   {getAiStateMessage()}

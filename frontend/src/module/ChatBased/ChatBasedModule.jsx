@@ -4,6 +4,98 @@ import { onAuthStateChanged } from "firebase/auth";
 import { X, Send, Menu, Sparkles, Bot } from "lucide-react";
 import api from "../services/api";
 import { StreamChat } from "stream-chat";
+import ReactMarkdown from "react-markdown";
+
+/**
+ * Message Renderer Component with Markdown Support
+ */
+const MarkdownMessage = ({ text, isAiMessage }) => {
+  return (
+    <ReactMarkdown
+      skipHtml={false}
+      allowedElements={[
+        "p",
+        "br",
+        "strong",
+        "em",
+        "u",
+        "h1",
+        "h2",
+        "h3",
+        "ul",
+        "ol",
+        "li",
+        "blockquote",
+        "code",
+        "pre",
+        "a",
+      ]}
+      components={{
+        p: ({ children }) => (
+          <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>
+        ),
+        strong: ({ children }) => (
+          <strong className="font-semibold">{children}</strong>
+        ),
+        em: ({ children }) => <em className="italic">{children}</em>,
+        u: ({ children }) => <u className="underline">{children}</u>,
+        code: ({ children, inline }) => {
+          const isCodeBlock =
+            typeof children === "string" && children.includes("\n");
+
+          return isCodeBlock ? (
+            <pre className="p-2 rounded-md overflow-x-auto my-2 text-xs font-mono bg-black/20 dark:bg-white/10">
+              <code className="text-xs">{children}</code>
+            </pre>
+          ) : (
+            <code className="px-1 py-0.5 rounded text-xs font-mono bg-black/20 dark:bg-white/20">
+              {children}
+            </code>
+          );
+        },
+        ul: ({ children }) => (
+          <ul className="list-disc ml-5 my-2 space-y-1">{children}</ul>
+        ),
+        ol: ({ children }) => (
+          <ol className="list-decimal ml-5 my-2 space-y-1">{children}</ol>
+        ),
+        li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+        blockquote: ({ children }) => (
+          <blockquote className="border-l-3 pl-3 my-2 italic border-current/30">
+            {children}
+          </blockquote>
+        ),
+        h1: ({ children }) => (
+          <h1 className="text-lg font-semibold mb-2 mt-3 first:mt-0">
+            {children}
+          </h1>
+        ),
+        h2: ({ children }) => (
+          <h2 className="text-base font-semibold mb-2 mt-3 first:mt-0">
+            {children}
+          </h2>
+        ),
+        h3: ({ children }) => (
+          <h3 className="text-sm font-semibold mb-2 mt-3 first:mt-0">
+            {children}
+          </h3>
+        ),
+        a: ({ children, href }) => (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:underline"
+          >
+            {children}
+          </a>
+        ),
+      }}
+    >
+      {text}
+    </ReactMarkdown>
+  );
+};
 
 /**
  * ChatBased Module - Main Entry Point with Full UI
@@ -374,7 +466,13 @@ const ChatBasedModule = ({ onClose, onBack }) => {
                         : "bg-blue-600 text-white"
                     }`}
                   >
-                    <p className="text-sm break-words">{msg.text}</p>
+                    <p className="text-sm break-words">
+                      {msg.type === "ai" ? (
+                        <MarkdownMessage text={msg.text} isAiMessage={true} />
+                      ) : (
+                        msg.text
+                      )}
+                    </p>
                     <p className="text-xs opacity-60 mt-1">
                       {msg.timestamp.toLocaleTimeString([], {
                         hour: "2-digit",

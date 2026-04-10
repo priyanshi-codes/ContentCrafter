@@ -15,7 +15,7 @@ import {
  * Clean and prepare message text for markdown rendering
  * Removes extra formatting artifacts and normalizes the text
  */
-const cleanMessageText = (text: string): string => {
+const cleanMessageText = (text) => {
   if (!text) return "";
   
   // Replace HTML entities if present
@@ -28,7 +28,7 @@ const cleanMessageText = (text: string): string => {
   return cleaned;
 };
 
-const ChatMessage: React.FC = () => {
+const ChatMessage = () => {
   const { message } = useMessageContext();
   const { channel } = useChannelStateContext();
   const { aiState } = useAIState(channel);
@@ -65,7 +65,7 @@ const ChatMessage: React.FC = () => {
     }
   };
 
-  const formatTime = (timestamp: string | Date) => {
+  const formatTime = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
@@ -200,52 +200,45 @@ const ChatMessage: React.FC = () => {
               </ReactMarkdown>
             </div>
 
-            {/* Loading State */}
-            {aiState && !displayText && (
-              <div className="flex items-center gap-2 mt-2 pt-2">
-                <span className="text-xs opacity-70">
-                  {getAiStateMessage()}
-                </span>
-                <div className="flex space-x-1">
-                  <div className="w-1 h-1 bg-current rounded-full typing-dot opacity-70"></div>
-                  <div className="w-1 h-1 bg-current rounded-full typing-dot opacity-70"></div>
-                  <div className="w-1 h-1 bg-current rounded-full typing-dot opacity-70"></div>
-                </div>
-              </div>
+            {/* Optional AI Status Message */}
+            {!isUser && getAiStateMessage() && (
+              <p className="text-xs text-muted-foreground italic mt-2">
+                {getAiStateMessage()}
+              </p>
             )}
           </div>
 
-          {/* Timestamp and Actions */}
-          <div className="flex items-center justify-between px-1">
-            {/* Timestamp - Always left aligned */}
-            <span className="text-xs text-muted-foreground/70">
-              {formatTime(message.created_at || new Date())}
-            </span>
-
-            {/* Actions - Only for AI messages, always right aligned */}
-            {!isUser && !!streamedMessageText && (
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={copyToClipboard}
-                  className="h-6 px-2 text-xs hover:bg-muted rounded-md"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="h-3 w-3 mr-1 text-green-600" />
-                      <span className="text-green-600">Copied</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3 w-3 mr-1" />
-                      <span>Copy</span>
-                    </>
-                  )}
-                </Button>
-              </div>
+          {/* Message Metadata */}
+          <div
+            className={cn(
+              "flex items-center gap-2 text-xs text-muted-foreground px-2",
+              isUser ? "justify-end" : "justify-start"
+            )}
+          >
+            <span>{formatTime(message.created_at)}</span>
+            {isUser && message.status === "sent" && (
+              <Check className="h-3 w-3" />
             )}
           </div>
+
+          {/* Copy to Clipboard Button (for AI messages) */}
+          {!isUser && (
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={copyToClipboard}
+                className="h-7 w-7 p-0 rounded"
+                title={copied ? "Copied!" : "Copy message"}
+              >
+                {copied ? (
+                  <Check className="h-3 w-3 text-green-600" />
+                ) : (
+                  <Copy className="h-3 w-3" />
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

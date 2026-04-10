@@ -1,20 +1,16 @@
 import OpenAI from "openai";
-import pkg from "stream-chat";
-const { Channel, DefaultGenerics, Event, StreamChat } = pkg;
-import { AIAgent} from "../types.js";
+import { OpenAIResponseHandler } from "./OpenAIResponseHandler.js";
 
 export class OpenAIAgent {
+  openai;
+  assistant;
+  openAiThread;
+  lastInteractionTs = Date.now();
+  handlers = [];
+
   constructor(chatClient, channel) {
     this.chatClient = chatClient;
     this.channel = channel;
-
-    this.openai = undefined;
-    this.assistant = undefined;
-    this.openAiThread = undefined;
-    this.lastInteractionTs = Date.now();
-
-    this.handlers = [];
-    this.processingMessageIds = new Set(); // Track messages being processed
   }
 
   dispose = async () => {
@@ -23,40 +19,49 @@ export class OpenAIAgent {
 
     this.handlers.forEach((handler) => handler.dispose());
     this.handlers = [];
-    this.processingMessageIds.clear();
   };
 
   get user() {
     return this.chatClient.user;
   }
 
-  getLastInteraction = () => {
-    return this.lastInteractionTs;
-  };
+  getLastInteraction = () => this.lastInteractionTs;
 
   init = async () => {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      throw new Error("Gemini API key is required");
+      throw new Error("OpenAI API key is required");
     }
 
-    // Initialize Gemini via OpenAI-compatible SDK
-    this.openai = new OpenAI({
-      apiKey: apiKey,
-      baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/"
+    this.openai = new OpenAI({ apiKey });
+    this.assistant = await this.openai.beta.assistants.create({
+      name: "AI Writing Assistant",
+      instructions: this.getWritingAssistantPrompt(),
+      model: "gpt-4o",
+      tools: [
+        { type: "code_interpreter" },
+        {
+          type: "function",
+          function: {
+            name: "web_search",
+            description:
+              "Search the web for current information, news, facts, or research on any topic",
+            parameters: {
+              type: "object",
+              properties: {
+                query: {
+                  type: "string",
+                  description: "The search query to find information about",
+                },
+              },
+              required: ["query"],
+            },
+          },
+        },
+      ],
+      temperature: 0.7,
     });
-
-    // Gemini doesn't support Assistants API, so we create a mock assistant object
-    this.assistant = {
-      id: "gemini-2.0-flash-lite",
-      name: "AI Writing Assistant"
-    };
-
-    // Gemini doesn't use threads, but we track message history
-    this.openAiThread = {
-      id: "direct-chat",
-      messages: []
-    };
+    this.openAiThread = await this.openai.beta.threads.create();
 
     this.chatClient.on("message.new", this.handleMessage);
   };
@@ -67,155 +72,83 @@ export class OpenAIAgent {
       month: "long",
       day: "numeric",
     });
-
     return `You are an expert AI Writing Assistant. Your primary purpose is to be a collaborative writing partner.
 
 **Your Core Capabilities:**
 - Content Creation, Improvement, Style Adaptation, Brainstorming, and Writing Coaching.
+- **Web Search**: You have the ability to search the web for up-to-date information using the 'web_search' tool.
 - **Current Date**: Today's date is ${currentDate}. Please use this for any time-sensitive queries.
 
 **Crucial Instructions:**
-1. Provide accurate, helpful, and well-structured writing assistance.
-2. Synthesize information to provide comprehensive and accurate answers.
-3. Be direct and production-ready.
-4. Use clear formatting.
-5. Never begin responses with phrases like "Here's the edit:", "Here are the changes:", or similar introductory statements.
-6. Provide responses directly and professionally without unnecessary preambles.
+1.  **ALWAYS use the 'web_search' tool when the user asks for current information, news, or facts.** Your internal knowledge is outdated.
+2.  When you use the 'web_search' tool, you will receive a JSON object with search results. **You MUST base your response on the information provided in that search result.** Do not rely on your pre-existing knowledge for topics that require current information.
+3.  Synthesize the information from the web search to provide a comprehensive and accurate answer. Cite sources if the results include URLs.
+
+**Response Format:**
+- Be direct and production-ready.
+- Use clear formatting.
+- Never begin responses with phrases like "Here's the edit:", "Here are the changes:", or similar introductory statements.
+- Provide responses directly and professionally without unnecessary preambles.
 
 **Writing Context**: ${context || "General writing assistance."}
 
-Your goal is to provide accurate, current, and helpful written content.`;
+Your goal is to provide accurate, current, and helpful written content. Failure to use web search for recent topics will result in an incorrect answer.`;
   };
 
   handleMessage = async (e) => {
-    console.log("[OpenAIAgent] Message event received:", e.message?.text);
-
-    if (!this.openai || !this.assistant) {
-      console.log("[OpenAIAgent] Gemini not initialized");
+    if (!this.openai || !this.openAiThread || !this.assistant) {
+      console.log("OpenAI not initialized");
       return;
     }
 
     if (!e.message || e.message.ai_generated) {
-      console.log("[OpenAIAgent] Skipping AI-generated or empty message");
-      return;
-    }
-
-    // Skip if already processing this message
-    if (this.processingMessageIds.has(e.message.id)) {
-      console.log("[OpenAIAgent] Message already being processed, skipping:", e.message.id);
       return;
     }
 
     const message = e.message.text;
-    if (!message) {
-      console.log("[OpenAIAgent] No message text");
-      return;
-    }
+    if (!message) return;
 
-    // Mark message as being processed
-    this.processingMessageIds.add(e.message.id);
-
-    console.log("[OpenAIAgent] Processing message:", message);
     this.lastInteractionTs = Date.now();
 
     const writingTask = e.message.custom?.writingTask;
     const context = writingTask ? `Writing Task: ${writingTask}` : undefined;
-    const systemPrompt = this.getWritingAssistantPrompt(context);
+    const instructions = this.getWritingAssistantPrompt(context);
 
-    // Add user message to history
-    this.openAiThread.messages.push({
+    await this.openai.beta.threads.messages.create(this.openAiThread.id, {
       role: "user",
-      content: message
+      content: message,
     });
 
-    try {
-      // Send initial "thinking" message to Stream Chat
-      console.log("[OpenAIAgent] Sending initial thinking message to channel");
-      const { message: channelMessage } = await this.channel.sendMessage({
-        text: "🤔 Thinking...",
-        ai_generated: true,
-      });
-      console.log("[OpenAIAgent] Initial message sent, ID:", channelMessage.id);
+    const { message: channelMessage } = await this.channel.sendMessage({
+      text: "",
+      ai_generated: true,
+    });
 
-      // Call Gemini API with streaming
-      console.log("[OpenAIAgent] Calling Gemini API with streaming...");
-      const response = await this.openai.chat.completions.create({
-        model: "gemini-2.5-flash",
-        reasoning_effort: "low",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...this.openAiThread.messages
-        ],
-        stream: true,
-      });
+    await this.channel.sendEvent({
+      type: "ai_indicator.update",
+      ai_state: "AI_STATE_THINKING",
+      cid: channelMessage.cid,
+      message_id: channelMessage.id,
+    });
 
-      // Collect response and update message in real-time
-      let fullResponse = "";
-      let lastUpdateTime = Date.now();
-      const updateInterval = 500; // Update every 500ms
-
-      for await (const chunk of response) {
-        const content = chunk.choices[0]?.delta?.content || "";
-        if (content) {
-          fullResponse += content;
-
-          // Update message every 500ms to show streaming effect
-          const now = Date.now();
-          if (now - lastUpdateTime > updateInterval) {
-            console.log("[OpenAIAgent] Updating message with partial content, length:", fullResponse.length);
-            try {
-              await this.chatClient.partialUpdateMessage(channelMessage.id, {
-                set: { text: fullResponse },
-              });
-            } catch (updateError) {
-              console.error("[OpenAIAgent] Error updating message:", updateError);
-            }
-            lastUpdateTime = now;
-          }
-        }
+    const run = this.openai.beta.threads.runs.createAndStream(
+      this.openAiThread.id,
+      {
+        assistant_id: this.assistant.id,
       }
+    );
 
-      console.log("[OpenAIAgent] Streaming complete, total length:", fullResponse.length);
-
-      // Final update with complete response
-      if (fullResponse.trim()) {
-        console.log("[OpenAIAgent] Sending final complete message");
-        await this.chatClient.partialUpdateMessage(channelMessage.id, {
-          set: { text: fullResponse },
-        });
-
-        // Add assistant response to history
-        this.openAiThread.messages.push({
-          role: "assistant",
-          content: fullResponse
-        });
-
-        // Keep only last 10 messages to manage token count
-        if (this.openAiThread.messages.length > 10) {
-          this.openAiThread.messages = this.openAiThread.messages.slice(-10);
-        }
-
-        console.log("[OpenAIAgent] Message processing complete");
-      } else {
-        console.warn("[OpenAIAgent] Empty response from Gemini");
-        await this.chatClient.partialUpdateMessage(channelMessage.id, {
-          set: { text: "⚠️ Could not generate a response. Please try again." },
-        });
-      }
-
-    } catch (error) {
-      console.error("[OpenAIAgent] Error processing message:", error);
-
-      try {
-        const { message: channelMessage } = await this.channel.sendMessage({
-          text: `⚠️ Error: ${error.message}`,
-          ai_generated: true,
-        });
-        console.log("[OpenAIAgent] Error message sent");
-      } catch (sendError) {
-        console.error("[OpenAIAgent] Failed to send error message:", sendError);
-      }
-    }
+    const handler = new OpenAIResponseHandler(
+      this.openai,
+      this.openAiThread,
+      run,
+      this.chatClient,
+      this.channel,
+      channelMessage,
+      () => this.removeHandler(handler)
+    );
+    this.handlers.push(handler);
+    void handler.run();
   };
 
   removeHandler = (handlerToRemove) => {

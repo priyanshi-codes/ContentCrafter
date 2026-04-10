@@ -11,32 +11,26 @@ import {
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Channel, ChannelFilters, ChannelSort, User } from "stream-chat";
 import { useChatContext } from "stream-chat-react";
 import { v4 as uuidv4 } from "uuid";
 import { ChatProvider } from "../providers/chat-provider";
 import { ChatInterface } from "./chat-interface";
 import { ChatSidebar } from "./chat-sidebar";
 
-interface AuthenticatedAppProps {
-  user: User;
-  onLogout: () => void;
-}
-
-export const AuthenticatedApp = ({ user, onLogout }: AuthenticatedAppProps) => (
+export const AuthenticatedApp = ({ user, onLogout }) => (
   <ChatProvider user={user}>
     <AuthenticatedCore user={user} onLogout={onLogout} />
   </ChatProvider>
 );
 
-const AuthenticatedCore = ({ user, onLogout }: AuthenticatedAppProps) => {
+const AuthenticatedCore = ({ user, onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [channelToDelete, setChannelToDelete] = useState<Channel | null>(null);
+  const [channelToDelete, setChannelToDelete] = useState(null);
   const { client, setActiveChannel } = useChatContext();
   const navigate = useNavigate();
-  const { channelId } = useParams<{ channelId: string }>();
-  const backendUrl = import.meta.env.VITE_BACKEND_URL as string;
+  const { channelId } = useParams();
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     const syncChannelWithUrl = async () => {
@@ -53,20 +47,19 @@ const AuthenticatedCore = ({ user, onLogout }: AuthenticatedAppProps) => {
     syncChannelWithUrl();
   }, [channelId, client, setActiveChannel]);
 
-  const handleNewChatMessage = async (message: { text: string }) => {
+  const handleNewChatMessage = async (message) => {
     if (!user.id) return;
 
     try {
       // 1. Create a new channel with the user as the only member
       const newChannel = client.channel("messaging", uuidv4(), {
         members: [user.id],
-        // @ts-expect-error: 'name' is used for display purposes but may not be in ChannelData type
         name: message.text.substring(0, 50),
       });
       await newChannel.watch();
 
       // 2. Set up event listener for when AI agent is added as member
-      const memberAddedPromise = new Promise<void>((resolve) => {
+      const memberAddedPromise = new Promise((resolve) => {
         const unsubscribe = newChannel.on("member.added", (event) => {
           // Check if the added member is the AI agent (not the current user)
           if (event.member?.user?.id && event.member.user.id !== user.id) {
@@ -110,7 +103,7 @@ const AuthenticatedCore = ({ user, onLogout }: AuthenticatedAppProps) => {
     setSidebarOpen(false);
   };
 
-  const handleDeleteClick = (channel: Channel) => {
+  const handleDeleteClick = (channel) => {
     setChannelToDelete(channel);
     setShowDeleteDialog(true);
   };
@@ -145,13 +138,6 @@ const AuthenticatedCore = ({ user, onLogout }: AuthenticatedAppProps) => {
       </div>
     );
   }
-
-  const filters: ChannelFilters = {
-    type: "messaging",
-    members: { $in: [user.id] },
-  };
-  const sort: ChannelSort = { last_message_at: -1 };
-  const options = { state: true, presence: true, limit: 10 };
 
   return (
     <div className="flex h-full w-full">

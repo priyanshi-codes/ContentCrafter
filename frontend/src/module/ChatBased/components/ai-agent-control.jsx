@@ -1,24 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { AgentStatus } from "@/module/ChatBased/hooks/use-ai-agent-status";
 import { AlertCircle, Bot, BotOff, Loader2, RotateCcw } from "lucide-react";
-import * as React from "react";
+import React from "react";
 
-interface AIAgentControlProps {
-  className?: string;
-  status: AgentStatus;
-  loading: boolean;
-  error: string | null;
-  toggleAgent: () => Promise<void>;
-  checkStatus: () => Promise<void>;
-  channelId?: string;
-}
-
-const getStatusConfig = (status: AgentStatus, loading: boolean) => {
+const getStatusConfig = (status, loading) => {
   if (loading) {
     return {
-      variant: "secondary" as const,
+      variant: "secondary",
       color: "text-orange-600 dark:text-orange-400",
       icon: Loader2,
       text: status === "connected" ? "Disconnecting" : "Connecting",
@@ -28,14 +17,14 @@ const getStatusConfig = (status: AgentStatus, loading: boolean) => {
   switch (status) {
     case "connected":
       return {
-        variant: "default" as const,
+        variant: "default",
         color: "text-green-600 dark:text-green-400",
         icon: Bot,
         text: "Connected",
       };
     case "connecting":
       return {
-        variant: "secondary" as const,
+        variant: "secondary",
         color: "text-orange-600 dark:text-orange-400",
         icon: Loader2,
         text: "Connecting",
@@ -43,7 +32,7 @@ const getStatusConfig = (status: AgentStatus, loading: boolean) => {
     case "disconnected":
     default:
       return {
-        variant: "outline" as const,
+        variant: "outline",
         color: "text-muted-foreground",
         icon: BotOff,
         text: "Offline",
@@ -51,7 +40,7 @@ const getStatusConfig = (status: AgentStatus, loading: boolean) => {
   }
 };
 
-export const AIAgentControl: React.FC<AIAgentControlProps> = ({
+export const AIAgentControl = ({
   className = "",
   status,
   loading,
@@ -66,22 +55,26 @@ export const AIAgentControl: React.FC<AIAgentControlProps> = ({
   const handleToggle = async () => {
     try {
       await toggleAgent();
-      toast(status === "connected" ? "AI Disconnected" : "AI Connected", {
+      toast({
+        title: status === "connected" ? "AI Disconnected" : "AI Connected",
         description:
           status === "connected"
             ? "AI assistant has been turned off"
             : "AI assistant is now active",
       });
     } catch (err) {
-      toast.error("Error", {
+      toast({
+        title: "Error",
         description: error || "Failed to toggle AI agent",
+        variant: "destructive",
       });
     }
   };
 
   const handleRefresh = async () => {
     await checkStatus();
-    toast("Status Updated", {
+    toast({
+      title: "Status Updated",
       description: "AI agent status has been refreshed",
     });
   };

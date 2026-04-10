@@ -19,20 +19,12 @@ import {
   Window,
 } from "stream-chat-react";
 import { AIAgentControl } from "./ai-agent-control";
-import { ChatInput, ChatInputProps } from "./chat-input";
+import { ChatInput } from "./chat-input";
 import ChatMessage from "./chat-message";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-interface ChatInterfaceProps {
-  onToggleSidebar: () => void;
-  onNewChatMessage: (message: { text: string }) => Promise<void>;
-  backendUrl: string;
-}
-
-const EmptyStateWithInput: React.FC<{
-  onNewChatMessage: ChatInputProps["sendMessage"];
-}> = ({ onNewChatMessage }) => {
+const EmptyStateWithInput = ({ onNewChatMessage }) => {
   const [inputText, setInputText] = useState("");
 
   // Research-based writing prompts organized by category
@@ -83,7 +75,7 @@ const EmptyStateWithInput: React.FC<{
     },
   ];
 
-  const handlePromptClick = (prompt: string) => {
+  const handlePromptClick = (prompt) => {
     setInputText(prompt);
   };
 
@@ -210,7 +202,7 @@ const MessageListContent = () => {
   );
 };
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({
+export const ChatInterface = ({
   onToggleSidebar,
   onNewChatMessage,
   backendUrl,
@@ -226,7 +218,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     const { channel, messages } = useChannelStateContext();
     const { aiState } = useAIState(channel);
     const [inputText, setInputText] = useState("");
-    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const textareaRef = useRef(null);
 
     const isGenerating =
       aiState === "AI_STATE_THINKING" ||
@@ -237,7 +229,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
     const handleStopGenerating = () => {
       if (channel) {
-        const aiMessage = [...(messages ?? [])]
+        const aiMessage = [...messages]
           .reverse()
           .find((m) => m.user?.id.startsWith("ai-bot"));
         if (aiMessage) {
@@ -250,23 +242,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       }
     };
 
-    const handleSendMessage = async (message: { text: string }) => {
-      try {
-        // Use the stream-chat sendMessage with minimal required parameters
-        await sendMessage({
-          message: {
-            text: message.text,
-          },
-        } as any);
-        setInputText("");
-      } catch (error) {
-        console.error("Failed to send message:", error);
-      }
-    };
-
     return (
       <ChatInput
-        sendMessage={handleSendMessage}
+        sendMessage={sendMessage}
         value={inputText}
         onValueChange={setInputText}
         textareaRef={textareaRef}
@@ -302,7 +280,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </div>
             <div>
               <h2 className="text-sm font-semibold text-foreground">
-                {(channel?.data as any)?.name || "New Writing Session"}
+                {channel?.data?.name || "New Writing Session"}
               </h2>
               <p className="text-xs text-muted-foreground">
                 AI Writing Assistant • Always improving

@@ -11,9 +11,11 @@ import ContentDisplay from '../GenreBased/ContentDropdown';
 import FullContentDisplay from '../GenreBased/FullContentDisplay';
 import Logo from "../../components/ui/Logo";
 import display from "../../assets/dispaly.avif"
-import ChatBasedModule from "../ChatBased/ChatBasedModule";
+import ImprovedChatBasedModule from "../ChatBased/ImprovedChatBasedModule";
+import { useAuth } from "../context/AuthContext";
 
 const UserDashboard = () => {
+  const { currentUser } = useAuth();
   const [typingText, setTypingText] = useState("");
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
@@ -190,6 +192,27 @@ const UserDashboard = () => {
     setIsModalOpen(false);
     setGeneratedContent("");
   };
+
+  // If showing chat interface, display it full-screen instead of dashboard
+  if (showChatInterface && currentUser) {
+    return (
+      <ImprovedChatBasedModule
+        user={{
+          id: currentUser.uid,
+          name: currentUser.displayName || currentUser.email,
+          email: currentUser.email,
+        }}
+        onClose={() => {
+          setShowChatInterface(false);
+          handleReset();
+        }}
+        onBack={() => {
+          setShowChatInterface(false);
+          handleReset();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="bg-gray-900 text-gray-200 font-Poppins min-h-screen">
@@ -699,20 +722,6 @@ const UserDashboard = () => {
         <FullContentDisplay 
           contentId={selectedContentId} 
           onBack={handleBackFromFullContent} 
-        />
-      )}
-
-      {/* Stream Chat Interface Modal */}
-      {showChatInterface && (
-        <ChatBasedModule
-          onClose={() => {
-            setShowChatInterface(false);
-            handleReset();
-          }}
-          onBack={() => {
-            setShowChatInterface(false);
-            handleReset();
-          }}
         />
       )}
 

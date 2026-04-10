@@ -1,20 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 
-export type AgentStatus = "disconnected" | "connecting" | "connected";
-
-interface UseAIAgentStatusProps {
-  channelId: string | null;
-  backendUrl: string;
-}
-
 export const useAIAgentStatus = ({
   channelId,
   backendUrl,
-}: UseAIAgentStatusProps) => {
+}) => {
   // Start with "disconnected" and determine status via effects
-  const [status, setStatus] = useState<AgentStatus>("disconnected");
+  const [status, setStatus] = useState("disconnected");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   // Check agent status from backend
   const checkStatus = useCallback(async () => {
@@ -27,7 +20,7 @@ export const useAIAgentStatus = ({
 
     try {
       const response = await fetch(
-        `${backendUrl}/agent-status?channel_id=${channelId}`
+        `${backendUrl}/api/v1/chat/status?channel_id=${channelId}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -56,7 +49,7 @@ export const useAIAgentStatus = ({
     setStatus("connecting"); // Optimistic update
 
     try {
-      const response = await fetch(`${backendUrl}/start-ai-agent`, {
+      const response = await fetch(`${backendUrl}/api/v1/chat/start-ai-agent`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -96,7 +89,7 @@ export const useAIAgentStatus = ({
     setError(null);
 
     try {
-      const response = await fetch(`${backendUrl}/stop-ai-agent`, {
+      const response = await fetch(`${backendUrl}/api/v1/chat/stop-ai-agent`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -140,6 +133,7 @@ export const useAIAgentStatus = ({
   useEffect(() => {
     checkStatus();
   }, [checkStatus]);
+
   // Poll status periodically
   useEffect(() => {
     if (channelId) {

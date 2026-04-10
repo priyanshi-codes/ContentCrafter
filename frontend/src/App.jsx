@@ -3,7 +3,7 @@ import Login from './module/pages/Login';
 import Signup from './module/pages/Signup';
 import DashboardPage from './module/pages/Dashbord';
 import UserDashboard from './module/pages/Userdashboard';
-import { ThemeProvider } from './module/components/theme-provider';
+import { ThemeProvider } from 'next-themes';
 import { AuthProvider } from './module/context/AuthContext';
 import { ProtectedRoute, PublicRoute, ConditionalHomeRoute } from './module/components/ProtectedRoute';
 import { Toaster } from './components/ui/sonner';

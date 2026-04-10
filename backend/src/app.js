@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import contentrouter from './routes/content.routes.js';
 import aiRouter from './routes/ai.routes.js';
+import streamChatRouter from '../streamchat/index.js';
 import { Content } from './models/content.model.js';
 import { Genre } from './models/genre.model.js';
 
@@ -24,6 +25,7 @@ app.use(cookieParser());
 // Routes
 app.use('/api/v1/content', contentrouter);
 app.use('/api/v1/ai', aiRouter);
+app.use('/api/v1/chat', streamChatRouter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

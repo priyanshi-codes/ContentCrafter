@@ -14,17 +14,9 @@ dotenv.config({
 import { createServer } from 'http';
 import connectDB from './db/index_db.js';
 import { app } from './app.js';
-import { initStreamChat } from '../streamchat/index.js';
 
 // Create HTTP server (required for potential WebSocket/streaming features)
 const server = createServer(app);
-
-// Initialize StreamChat module
-const chatService = initStreamChat({
-  app,
-  server,
-  options: {},
-});
 
 // Connect to MongoDB and start server
 connectDB()
@@ -37,8 +29,6 @@ connectDB()
     console.error('❌ MongoDB Connection Failed!', err);
     process.exit(1);
   });
-
-// Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received, shutting down gracefully...');
   server.close(() => {

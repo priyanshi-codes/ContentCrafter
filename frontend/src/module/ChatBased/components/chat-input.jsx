@@ -5,19 +5,7 @@ import { ArrowRight, Square, X } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { WritingPromptsToolbar } from "./writing-prompts-toolbar";
 
-export interface ChatInputProps {
-  className?: string;
-  sendMessage: (message: { text: string }) => Promise<void> | void;
-  isGenerating?: boolean;
-  onStopGenerating?: () => void;
-  placeholder?: string;
-  value: string;
-  onValueChange: (text: string) => void;
-  textareaRef?: React.RefObject<HTMLTextAreaElement | null>;
-  showPromptToolbar?: boolean;
-}
-
-export const ChatInput: React.FC<ChatInputProps> = ({
+export const ChatInput = ({
   className,
   sendMessage,
   isGenerating,
@@ -29,10 +17,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   showPromptToolbar = false,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const internalTextareaRef = useRef(null);
   const textareaRef = externalTextareaRef || internalTextareaRef;
 
-  const handlePromptSelect = (prompt: string) => {
+  const handlePromptSelect = (prompt) => {
     // Append the prompt to existing text or set it if empty
     onValueChange(value ? `${value.trim()} ${prompt}` : prompt);
     textareaRef.current?.focus();
@@ -55,7 +43,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     updateTextareaHeight();
   }, [value, updateTextareaHeight]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!value.trim() || isLoading || isGenerating || !sendMessage) return;
 
@@ -76,7 +64,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
